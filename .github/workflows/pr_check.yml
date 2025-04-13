@@ -1,0 +1,25 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore ./src/MockExams.sln
+    - name: Build
+      run: dotnet build ./src/MockExams.sln --configuration Release
+    - name: Test
+      run: dotnet test ./src/MockExams.sln --configuration Release
+
+# todo: rodar cobertura de código. Falhar se menor que 50%.

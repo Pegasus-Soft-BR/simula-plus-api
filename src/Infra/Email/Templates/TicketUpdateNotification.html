@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Salve Elas - Confirmação de Ticket</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 3px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        .ticket-info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+        }
+
+            .ticket-info p {
+                margin-bottom: 10px;
+            }
+
+        .btn {
+            display: block;
+            margin-top: 30px;
+            padding: 15px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+            .btn:hover {
+                background-color: #0069d9;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirmação de Ticket</h1>
+        <p>Olá, {USER_NAME}</p>
+        <p>Seu ticket foi atualizado. Precisamos do seu comparecimento.</p>
+        <div class="ticket-info">
+            <p>Local: {AUTHORITY}</p>
+            <p>Data: {RETURN_DATE}</p>
+        </div>
+
+        <br /><br />
+
+        Atenciosamente,<br /><br />
+
+        Salve Elas App<br />
+        apoio a segurança das mulheres
+    </div>
+</body>
+</html>
