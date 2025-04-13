@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.DTOs;
+using Domain.DTOs.Exam;
 
 namespace Domain.AutoMapper;
 
@@ -25,5 +26,8 @@ public class DtoToDomainMappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
         CreateMap<ContactUsDTO, ContactUs>();
+
+        CreateMap<CreateExamDto, Exam>();
+        CreateMap<CreateExamQuestionDto, Question>();
     }
 }

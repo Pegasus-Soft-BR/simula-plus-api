@@ -12,7 +12,7 @@ public class Question : BaseEntity
     public string Option3 { get; set; }
     public string Option4 { get; set; }
     public string Option5 { get; set; }
-    public string CorrectOptions { get; set; } // Pode armazenar múltiplas respostas como JSON ou string separada por vírgula
+    public string CorrectOptions { get; set; } // Exemplos válidos "1" ou "1,2"
     public int DifficultyLevel { get; set; } // 1 = Fácil, 2 = Médio, 3 = Difícil
 
     // Relacionamento

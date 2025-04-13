@@ -1,7 +1,6 @@
-﻿using Domain.DTOs;
-using System;
+﻿using System;
 
-namespace Domain.DTOs;
+namespace Domain.DTOs.Exam;
 
 public class QuestionDto
 {

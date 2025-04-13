@@ -1,4 +1,6 @@
 ﻿using Domain.Common;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Domain;
 
@@ -10,8 +12,13 @@ public class Exam : BaseEntity
     public int TotalQuestionsPerAttempt { get; set; }
     public string ImageSlug { get; set; }
 
+    public virtual IList<Question> Questions { get; set; }
+
     public string GetImageUrl(string baseUrl)
     {
-        return $"{baseUrl}/ExamCovers/{this.ImageSlug}.jpg";
+        if(string.IsNullOrEmpty(ImageSlug))
+            return null;
+        else 
+            return $"{baseUrl}/ExamCovers/{this.ImageSlug}.jpg";
     }
 }

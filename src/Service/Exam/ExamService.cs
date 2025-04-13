@@ -15,19 +15,26 @@ using Domain.Enums;
 using Domain.DTOs.Exam;
 using System.Threading.Tasks;
 using Domain.Common;
+using Service.Exam.Generator;
+using Microsoft.Extensions.Logging;
 
 namespace MockExams.Service;
 
 public class ExamService : BaseService<Exam>, IExamService
 {
-    private readonly AutoMapper.IMapper _mapper;
+    private readonly IMapper _mapper;
+    private readonly IExamGeneratorService _generator;
+    protected ILogger<ExamService> _logger;
+
 
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        IUserEmailService userEmailService, ISmsService smsService) : base(context, unitOfWork, validator)
+        IUserEmailService userEmailService, ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator)
     {
         _mapper = mapper;
+        _generator = generator;
+        _logger = logger;
     }
 
     public StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId)
@@ -174,7 +181,21 @@ public class ExamService : BaseService<Exam>, IExamService
         
         if (!exams.Any())
         {
-            // TODO: criar o exame usando a api do chatGPT
+            try
+            {
+                var newExam = await _generator.GenerateAsync(term);
+                newExam.TimeSpentMaxSeconds = 600; // 10 minutos
+                newExam.TotalQuestionsPerAttempt = 5;
+                _ctx.Exams.Add(newExam);
+                _ctx.SaveChanges();
+
+                exams.Add(newExam);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao gerar exame via IA.");
+            }
+            
         }
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);
