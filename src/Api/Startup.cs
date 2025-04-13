@@ -1,5 +1,6 @@
 ﻿using Domain.AutoMapper;
 using Domain.DTOs;
+using Infra.IA;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,8 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddHttpClient();
+        
         var isDocker = Environment.GetEnvironmentVariable("IS_DOCKER");
         var connectionStringKey = isDocker == "1" ? "DefaultConnectionDocker" : "DefaultConnection";
 
@@ -75,6 +78,7 @@ public class Startup
         services.Configure<AwsS3Settings>(options => Configuration.GetSection("AwsS3Settings").Bind(options));
         services.Configure<SmsSettingsTwillio>(options => Configuration.GetSection("SmsSettingsTwillio").Bind(options));
         services.Configure<UrlShortenerSettings>(options => Configuration.GetSection("UrlShortenerSettings").Bind(options));
+        services.Configure<IASettings>(options => Configuration.GetSection("IASettings").Bind(options));
 
         services.AddHttpContextAccessor();
 
@@ -107,6 +111,7 @@ public class Startup
                        isActive: Configuration.GetSection("Rollbar:IsActive").Value,
                        token: Configuration.GetSection("Rollbar:Token").Value,
                        logLevel: Configuration.GetSection("Rollbar:LogLevel").Value);
+
 
         
 

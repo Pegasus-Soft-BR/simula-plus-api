@@ -169,9 +169,10 @@ public class ExamService : BaseService<Exam>, IExamService
         var exams = await _ctx.Exams
             .Where(e => e.Title.ToLower().Contains(term) || e.Description.ToLower().Contains(term))
             .OrderByDescending(e => e.CreatedAt)
+            .Take(10)
             .ToListAsync();
         
-        if (exams.Count == 0)
+        if (!exams.Any())
         {
             // TODO: criar o exame usando a api do chatGPT
         }
