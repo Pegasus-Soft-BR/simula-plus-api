@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Helper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MockExams.Infra.Sms;
 using System.Net.Http;
@@ -45,6 +46,9 @@ public class ChatGptClient : IIAClient
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
-        return content; // será tratado pelo service depois
+
+        var message = JsonHelper.FromJson<ChatGptResponse>(content);
+
+        return message.Choices[0].Message.Content; 
     }
 }

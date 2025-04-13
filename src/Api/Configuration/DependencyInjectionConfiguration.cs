@@ -16,6 +16,7 @@ using MockExams.Lgpd;
 using Domain;
 using Domain.DTOs;
 using Infra.IA;
+using Service.Exam.Generator;
 
 namespace MockExams.Api.Configuration;
 
@@ -31,6 +32,7 @@ public static class DependencyInjectionConfiguration
         services.AddScoped<IContactUsEmailService, ContactUsEmailService>();
         services.AddScoped<ILgpdService, LgpdService>();
         services.AddScoped<IExamService, ExamService>();
+        services.AddScoped<IExamGeneratorService, ExamGeneratorService>();
 
         //validators
         services.AddScoped<IValidator<User>, UserValidator>();
