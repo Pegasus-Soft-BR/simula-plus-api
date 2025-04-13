@@ -25,7 +25,7 @@ public class ChatGptClient : IIAClient
 
         var requestBody = new
         {
-            model = "gpt-4",
+            model = "gpt-4o-mini", // mais barato
             messages = new[]
             {
             new { role = "system", content = "Você é um especialista em simulados técnicos." },
