@@ -12,6 +12,8 @@ using MockExams.Jobs;
 using MockExams.Service.Authorization;
 using System;
 using System.Reflection;
+using Infra.IA;
+using System.Threading.Tasks;
 
 namespace MockExams.Api.Controllers;
 
@@ -26,8 +28,9 @@ public class OperationsController : ControllerBase
     private readonly IWebHostEnvironment _env;
     protected ISmsService _sms;
     protected ILogger<OperationsController> _logger;
+    protected IIAClient _chatGptClient;
 
-    public OperationsController(IJobExecutor executor, IOptions<ServerSettings> settings, IEmailService emailService, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger)
+    public OperationsController(IJobExecutor executor, IOptions<ServerSettings> settings, IEmailService emailService, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient)
     {
         _executor = executor;
         _validToken = settings.Value.JobExecutorToken;
@@ -35,6 +38,7 @@ public class OperationsController : ControllerBase
         _env = env;
         _sms = sms;
         _logger = logger;
+        _chatGptClient = chatGptClient;
     }
 
     [HttpGet]
@@ -102,6 +106,18 @@ public class OperationsController : ControllerBase
 
         _sms.SendMessage(phone, $"Teste de SMS {numeroAleatorio}").Wait();
         return Ok();
+    }
+
+    [HttpPost("chatgpt-test")]
+    [Authorize("Bearer")]
+    [AuthorizationFilter(Permissions.Permission.Admin)]
+    public async Task<IActionResult> ChatGptTest([FromQuery] string prompt)
+    {
+        if (string.IsNullOrEmpty(prompt))
+            return BadRequest("Favor informar um prompt.");
+
+        var result = await _chatGptClient.GenerateAsync(prompt);
+        return Ok(result);
     }
 
     protected bool _IsValidJobToken() => Request.Headers["Authorization"].ToString() == _validToken;

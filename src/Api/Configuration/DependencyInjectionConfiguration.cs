@@ -15,6 +15,7 @@ using MockExams.Infra.UrlShortener;
 using MockExams.Lgpd;
 using Domain;
 using Domain.DTOs;
+using Infra.IA;
 
 namespace MockExams.Api.Configuration;
 
@@ -45,6 +46,7 @@ public static class DependencyInjectionConfiguration
         services.AddSingleton<IAwsS3Service, AwsS3Service>();
         services.AddSingleton<ISmsService, SmsServiceTwilio>();
         services.AddSingleton<IUrlShortener, UrlShortener>();
+        services.AddSingleton<IIAClient, ChatGptClient>();
 
         //UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
