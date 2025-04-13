@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Domain;
 using Domain.Common;
 using Domain.DTOs;
 using Domain.DTOs.Exam;
@@ -14,6 +15,7 @@ using MockExams.Service.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Api.Controllers;
 
@@ -39,6 +41,13 @@ public class ExamsController : ControllerBase
     {
         var exams = _service.PagedList(itemsPerPage, page, order, filter);
         var examsDto = _mapper.Map<PagedList<ExamDto>>(exams);
+        return Ok(examsDto);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string term = "")
+    {
+        var examsDto = await _service.Search(term);
         return Ok(examsDto);
     }
 

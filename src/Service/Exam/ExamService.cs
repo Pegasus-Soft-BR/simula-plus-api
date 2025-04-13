@@ -13,6 +13,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Domain.Enums;
 using Domain.DTOs.Exam;
+using System.Threading.Tasks;
+using Domain.Common;
 
 namespace MockExams.Service;
 
@@ -155,5 +157,26 @@ public class ExamService : BaseService<Exam>, IExamService
         result.Status = attempt.Status;
 
         return result;
+    }
+
+    public async Task<List<ExamDto>> Search(string term = "")
+    {
+        if (string.IsNullOrEmpty(term) || term.Length < 2)
+            throw new BizException(BizException.Error.BadRequest, "Favor refinar mais o termo de pesquisa.");
+
+        term = term.ToLower().Trim();
+
+        var exams = await _ctx.Exams
+            .Where(e => e.Title.ToLower().Contains(term) || e.Description.ToLower().Contains(term))
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+        
+        if (exams.Count == 0)
+        {
+            // TODO: criar o exame usando a api do chatGPT
+        }
+
+        var examsDto = _mapper.Map<List<ExamDto>>(exams);
+        return examsDto;
     }
 }
