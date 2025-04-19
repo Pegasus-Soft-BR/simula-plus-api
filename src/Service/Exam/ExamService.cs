@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Domain.Common;
 using Service.Exam.Generator;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 
 namespace MockExams.Service;
 
@@ -171,18 +172,14 @@ public class ExamService : BaseService<Exam>, IExamService
         if (string.IsNullOrEmpty(term) || term.Length < 2)
             throw new BizException(BizException.Error.BadRequest, "Favor refinar mais o termo de pesquisa.");
 
-        term = term.ToLower().Trim();
-
-        var exams = await _ctx.Exams
-            .Where(e => e.Title.ToLower().Contains(term) || e.Description.ToLower().Contains(term))
-            .OrderByDescending(e => e.CreatedAt)
-            .Take(10)
-            .ToListAsync();
-        
+        var exams = await FullTextSearch(term);
+            
         if (!exams.Any())
         {
             try
             {
+                _logger.LogInformation($"Nenhum exame encontrado com o termo '{term}'. Tentando criar um novo usando IA.");
+
                 var newExam = await _generator.GenerateAsync(term);
                 newExam.TimeSpentMaxSeconds = 600; // 10 minutos
                 newExam.TotalQuestionsPerAttempt = 5;
@@ -200,5 +197,28 @@ public class ExamService : BaseService<Exam>, IExamService
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);
         return examsDto;
+    }
+
+    private async Task<List<Exam>> FullTextSearch(string term)
+    {
+        term = term.ToLower().Trim();
+
+        var tokens = term
+            .Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var isaboutClause = string.Join(", ", tokens.Select(t =>
+            $"\"{t.Replace("\"", "").ToUpper()}*\" WEIGHT({(1.0 / tokens.Length).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)})"));
+
+        var fullTextFilter = $"ISABOUT ({isaboutClause})";
+
+        var sql = $@"
+        SELECT TOP 10 e.*
+        FROM CONTAINSTABLE(Exams, (Title, Description), {{0}}) AS ft
+        JOIN Exams e ON e.Id = ft.[KEY]
+        ORDER BY ft.[RANK] DESC";
+
+        return await _ctx.Exams
+            .FromSqlRaw(sql, fullTextFilter)
+            .ToListAsync();
     }
 }

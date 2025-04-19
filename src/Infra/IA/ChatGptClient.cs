@@ -1,4 +1,5 @@
-﻿using Helper;
+﻿using Amazon.Runtime;
+using Helper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MockExams.Infra.Sms;
@@ -14,9 +15,9 @@ public class ChatGptClient : IIAClient
     private readonly HttpClient _httpClient;
     private IASettings _settings { get; set; }
 
-    public ChatGptClient(HttpClient httpClient, IOptions<IASettings> settings)
+    public ChatGptClient(IHttpClientFactory httpClientFactory, IOptions<IASettings> settings)
     {
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("DefaultClient");
         _settings = settings.Value;
     }
 
@@ -29,9 +30,9 @@ public class ChatGptClient : IIAClient
             model = "gpt-4o-mini", // mais barato
             messages = new[]
             {
-            new { role = "system", content = "Você é um especialista em simulados técnicos." },
-            new { role = "user", content = prompt }
-        },
+                        new { role = "system", content = "Você é um especialista em simulados técnicos." },
+                        new { role = "user", content = prompt }
+                    },
             temperature = 0.7
         };
 
@@ -49,6 +50,6 @@ public class ChatGptClient : IIAClient
 
         var message = JsonHelper.FromJson<ChatGptResponse>(content);
 
-        return message.Choices[0].Message.Content; 
+        return message.Choices[0].Message.Content;
     }
 }

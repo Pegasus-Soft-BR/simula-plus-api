@@ -1,5 +1,6 @@
 ﻿using Domain.AutoMapper;
 using Domain.DTOs;
+using Infra.HttpHandlers;
 using Infra.IA;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -38,7 +39,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddHttpClient();
+        services.AddTransient<LoggingHttpMessageHandler>();
+
+        services.AddHttpClient("DefaultClient")
+            .AddHttpMessageHandler<LoggingHttpMessageHandler>(); ;
         
         var isDocker = Environment.GetEnvironmentVariable("IS_DOCKER");
         var connectionStringKey = isDocker == "1" ? "DefaultConnectionDocker" : "DefaultConnection";
