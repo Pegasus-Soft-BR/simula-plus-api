@@ -1,4 +1,6 @@
-﻿using Domain.AutoMapper;
+﻿using Api.Configuration;
+using Api.Middleware;
+using Domain.AutoMapper;
 using Domain.DTOs;
 using Infra.HttpHandlers;
 using Infra.IA;
@@ -52,6 +54,7 @@ public class Startup
         .ReadFrom.Configuration(Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
+        .Enrich.With<SerilogTraceIdEnricher>()
         .WriteTo.Console()
         .WriteTo.MSSqlServer(
             connectionString: Configuration.GetConnectionString(connectionStringKey),
@@ -123,6 +126,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        app.UseMiddleware<TraceIdOverrideMiddleware>();
         app.UseSerilogRequestLogging();
 
 
@@ -134,7 +138,7 @@ public class Startup
 
         app.UseHealthChecks("/hc");
         app.UseExceptionHandlerMiddleware();
-
+        
         app.UseStaticFiles(new StaticFileOptions()
         {
             OnPrepareResponse = (context) =>

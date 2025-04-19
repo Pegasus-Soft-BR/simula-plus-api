@@ -19,13 +19,18 @@ public class LoggingHttpMessageHandler : DelegatingHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var timeSpent = Stopwatch.StartNew();
-        // Logando a requisição
+
+        // Adiciona o TraceId no header da requisição (se existir)
+        var traceId = Activity.Current?.TraceId.ToString();
+        if (!string.IsNullOrWhiteSpace(traceId))
+            request.Headers.TryAddWithoutValidation("X-Trace-Id", traceId);
+
         _logger.LogInformation("[Request] {method} {url}", request.Method, request.RequestUri);
 
         var response = await base.SendAsync(request, cancellationToken);
         timeSpent.Stop();
 
-        // Logando a resposta
+
         _logger.LogInformation("[Response] {method} {url} responded {statusCode} in {time}ms", request.Method, request.RequestUri, (int)response.StatusCode, timeSpent.ElapsedMilliseconds);
 
         return response;
