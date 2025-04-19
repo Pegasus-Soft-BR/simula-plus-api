@@ -33,7 +33,7 @@ public class ExamGeneratorService : IExamGeneratorService
 
     private string PromptFactory(string term)
     {
-        var totalQuestions = 10;
+        var totalQuestions = 15;
 
         var prompt = $$"""
              Você é um especialista em simulados técnicos para desenvolvedores.
@@ -44,7 +44,7 @@ public class ExamGeneratorService : IExamGeneratorService
 
              {
                "title": "Título chamativo do simulado",
-               "description": "Resumo breve sobre o tema",
+               "description": "Resumo breve sobre o tema com palavras chaves que ajudem a ser encontrado em buscas.",
                "questions": [
          	    {
 
