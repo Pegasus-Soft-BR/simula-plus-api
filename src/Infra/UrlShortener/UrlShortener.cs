@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MockExams.Infra.Sms;
 using System;
 using System.Net.Http;
@@ -9,27 +10,28 @@ namespace MockExams.Infra.UrlShortener;
 
 public class UrlShortener : IUrlShortener
 {
+    private readonly HttpClient _httpClient;
     private UrlShortenerSettings _settings { get; set; }
+    private readonly ILogger<UrlShortener> _logger;
 
-    public UrlShortener(IOptions<UrlShortenerSettings> settings)
+    public UrlShortener(IOptions<UrlShortenerSettings> settings, IHttpClientFactory httpClientFactory, ILogger<UrlShortener> logger)
     {
         _settings = settings.Value;
+        _httpClient = _httpClient = httpClientFactory.CreateClient("DefaultClient");
+        _logger = logger;
     }
 
     public string GetShortUrl(string longUrl)
     {
         try
         {
-            Console.WriteLine("[URL SHORTENER] Iniciando.");
+            _logger.LogDebug("[URL SHORTENER] Iniciando.");
 
             if (!_settings.IsActive)
             {
-                // TODO: logar alguma coisa.
-                Console.WriteLine("[URL SHORTENER] Não vou executar porque estou desabilitado no settings.");
+                _logger.LogDebug("[URL SHORTENER] Não vou executar porque estou desabilitado no settings.");
                 return longUrl;
             }
-
-            HttpClient client = new HttpClient();
 
             var url = "https://url-shortener-service.p.rapidapi.com/shorten";
             var apiKey = _settings.ApiKey;
@@ -38,26 +40,21 @@ public class UrlShortener : IUrlShortener
 
             var content = new StringContent($"url={Uri.EscapeDataString(targetUrl)}", Encoding.UTF8, "application/x-www-form-urlencoded");
 
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", apiKey);
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", host);
+            _httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Key", apiKey);
+            _httpClient.DefaultRequestHeaders.Add("X-RapidAPI-Host", host);
 
-            var response = client.PostAsync(url, content).Result;
+            var response = _httpClient.PostAsync(url, content).Result;
 
-            if (response.IsSuccessStatusCode)
-            {
-                var responseText = response.Content.ReadAsStringAsync().Result;
-                var result = JsonSerializer.Deserialize<UrlShortenerResult>(responseText);
-                return result.result_url;
-            }
-            else
-            {
-                throw new Exception($"Request failed with status code {response.StatusCode}");
-            }
+            response.EnsureSuccessStatusCode();
+
+            var responseText = response.Content.ReadAsStringAsync().Result;
+            var result = JsonSerializer.Deserialize<UrlShortenerResult>(responseText);
+            return result.result_url;
+
         }
         catch (Exception ex)
         {
-            // TODO: logar erro.
-            Console.WriteLine("[URL SHORTENER]" + ex.Message);
+            _logger.LogError(ex, "[URL SHORTENER] Ocorreu um erro ao encurtar a URL: {message}", ex.Message);
             return longUrl;
         }
 

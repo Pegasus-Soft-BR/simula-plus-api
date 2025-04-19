@@ -14,6 +14,7 @@ using System;
 using System.Reflection;
 using Infra.IA;
 using System.Threading.Tasks;
+using MockExams.Infra.UrlShortener;
 
 namespace MockExams.Api.Controllers;
 
@@ -29,8 +30,9 @@ public class OperationsController : ControllerBase
     protected ISmsService _sms;
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
+    protected IUrlShortener _urlShortener;
 
-    public OperationsController(IJobExecutor executor, IOptions<ServerSettings> settings, IEmailService emailService, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient)
+    public OperationsController(IJobExecutor executor, IOptions<ServerSettings> settings, IEmailService emailService, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener)
     {
         _executor = executor;
         _validToken = settings.Value.JobExecutorToken;
@@ -39,6 +41,7 @@ public class OperationsController : ControllerBase
         _sms = sms;
         _logger = logger;
         _chatGptClient = chatGptClient;
+        _urlShortener = urlShortener;
     }
 
     [HttpGet]
@@ -117,6 +120,18 @@ public class OperationsController : ControllerBase
             return BadRequest("Favor informar um prompt.");
 
         var result = await _chatGptClient.GenerateAsync(prompt);
+        return Ok(result);
+    }
+
+    [HttpPost("url-shortener-test")]
+    [Authorize("Bearer")]
+    [AuthorizationFilter(Permissions.Permission.Admin)]
+    public async Task<IActionResult> UrlShortenerTest([FromQuery] string url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return BadRequest("Favor informar uma url.");
+
+        var result = _urlShortener.GetShortUrl(url);
         return Ok(result);
     }
 
