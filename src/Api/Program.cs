@@ -1,37 +1,165 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Api.Configuration;
+using Api.Middleware;
+using Domain.AutoMapper;
+using Domain.DTOs;
+using Infra.HttpHandlers;
+using Infra.IA;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MockExams.Api.Configuration;
+using MockExams.Api.Middleware;
+using MockExams.Api.Services;
+using MockExams.Infra.AwsS3;
+using MockExams.Infra.Database;
+using MockExams.Infra.Email;
+using MockExams.Infra.Sms;
+using MockExams.Infra.UrlShortener;
+using Rollbar.NetPlatformExtensions;
 using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using System;
+using System.Text.Json.Serialization;
 
-namespace MockExams.Api;
+var builder = WebApplication.CreateBuilder(args);
 
-public class Program
-{
-    public static void Main(string[] args)
+// Verifica ambiente Docker para selecionar a connection string correta
+var isDocker = Environment.GetEnvironmentVariable("IS_DOCKER");
+var connectionStringKey = isDocker == "1" ? "DefaultConnectionDocker" : "DefaultConnection";
+var connectionString = builder.Configuration.GetConnectionString(connectionStringKey);
+
+// Serilog
+builder.Host.UseSerilog((ctx, lc) => lc
+    .ReadFrom.Configuration(ctx.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.With<SerilogTraceIdEnricher>()
+    .WriteTo.Console()
+    .WriteTo.MSSqlServer(
+        connectionString: connectionString,
+        sinkOptions: new MSSqlServerSinkOptions { TableName = "Logs", AutoCreateSqlTable = true })
+);
+
+// HealthChecks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString);
+
+// Configuração de serviços e dependências
+builder.Services.AddTransient<LoggingHttpMessageHandler>();
+builder.Services.AddHttpClient("DefaultClient")
+    .AddHttpMessageHandler<LoggingHttpMessageHandler>();
+
+builder.Services.DependencyInjection();
+builder.Services.AddAutoMapper(typeof(DomainToDTOMappingProfile));
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
     {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateLogger();
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
-        try
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "Erro fatal ao iniciar a aplicação");
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-    }
+builder.Services.AddHttpContextAccessor();
 
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args) 
-            .UseSerilog() 
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            });
+builder.Services
+    .Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"))
+    .Configure<ServerSettings>(builder.Configuration.GetSection("ServerSettings"))
+    .Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3Settings"))
+    .Configure<SmsSettingsTwillio>(builder.Configuration.GetSection("SmsSettingsTwillio"))
+    .Configure<UrlShortenerSettings>(builder.Configuration.GetSection("UrlShortenerSettings"))
+    .Configure<IASettings>(builder.Configuration.GetSection("IASettings"))
+    .Configure<RollbarOptions>(builder.Configuration.GetSection("Rollbar"));
+
+builder.Services.AddRollbarLogger(options => options.Filter = (loggerName, logLevel) => logLevel >= LogLevel.Trace);
+
+JWTConfig.RegisterJWT(builder.Services, builder.Configuration);
+builder.Services.RegisterSwagger();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllHeaders", policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options
+        .UseLazyLoadingProxies()
+        .UseSqlServer(connectionString)
+);
+
+// Rollbar Config direto no início
+RollbarConfigurator.Configure(
+    environment: builder.Configuration["Rollbar:Environment"],
+    isActive: builder.Configuration["Rollbar:IsActive"],
+    token: builder.Configuration["Rollbar:Token"],
+    logLevel: builder.Configuration["Rollbar:LogLevel"]
+);
+
+var app = builder.Build();
+
+// Middlewares
+app.UseMiddleware<TraceIdOverrideMiddleware>();
+app.UseSerilogRequestLogging();
+
+if (bool.TryParse(builder.Configuration["Rollbar:IsActive"], out var rollbarActive) && rollbarActive)
+{
+    app.UseRollbarMiddleware();
 }
+
+app.UseExceptionHandlerMiddleware();
+app.UseHealthChecks("/hc");
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+    }
+});
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Simula+ API V1");
+});
+
+app.UseRouting();
+app.UseCors("AllowAllHeaders");
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    AllowCachingResponses = false,
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy] = StatusCodes.Status200OK,
+        [HealthStatus.Degraded] = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+    }
+});
+
+// Seed e migrations
+using (var scope = app.Services.CreateScope())
+{
+    var env = app.Environment;
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+
+    if (env.IsDevelopment() || env.IsStaging())
+    {
+        var seeder = new DatabaseSeeder(context);
+        seeder.Seed();
+    }
+}
+
+app.Run();
