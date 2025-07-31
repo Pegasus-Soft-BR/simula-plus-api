@@ -28,24 +28,4 @@
   <ItemGroup>
     <Folder Include="Migrations\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="Email\Templates\AnonymizeNotifyAdms.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Email\Templates\SendEmailVerificationCode.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Email\Templates\TicketUpdateNotification.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Email\Templates\ContactUsNotificationTemplate.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Email\Templates\ContactUsTemplate.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Email\Templates\ForgotPasswordTemplate.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

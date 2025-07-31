@@ -1,23 +1,21 @@
 ﻿using AutoMapper;
 using Domain;
+using Domain.DTOs;
+using Domain.DTOs.Exam;
+using Domain.Enums;
+using Domain.Exceptions;
 using FluentValidation;
-using MockExams.Infra.Database.UoW;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MockExams.Infra.Database;
+using MockExams.Infra.Database.UoW;
 using MockExams.Infra.Sms;
 using MockExams.Service.Generic;
-using Domain.DTOs;
-using System;
-using Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Collections.Generic;
-using Domain.Enums;
-using Domain.DTOs.Exam;
-using System.Threading.Tasks;
-using Domain.Common;
 using Service.Exam.Generator;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MockExams.Service;
 
@@ -31,7 +29,7 @@ public class ExamService : BaseService<Exam>, IExamService
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        IUserEmailService userEmailService, ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator)
+        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator)
     {
         _mapper = mapper;
         _generator = generator;
@@ -41,7 +39,7 @@ public class ExamService : BaseService<Exam>, IExamService
     public StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId)
     {
         // 1 - validar
-        if(!userId.HasValue)
+        if (!userId.HasValue)
             throw new BizException(BizException.Error.NotAuthorized);
 
         var exam = _ctx.Exams.FirstOrDefault(e => e.Id == examId);
@@ -60,10 +58,10 @@ public class ExamService : BaseService<Exam>, IExamService
         var randomQuestions = _ctx.Questions
             .Where(q => q.ExamId == examId)
             .OrderBy(q => Guid.NewGuid()) // Ordena aleatoriamente
-            .Take( exam.TotalQuestionsPerAttempt ) // Seleciona N perguntas
+            .Take(exam.TotalQuestionsPerAttempt) // Seleciona N perguntas
             .ToList();
 
-        attempt.Answers = randomQuestions.Select(q => new Answer() 
+        attempt.Answers = randomQuestions.Select(q => new Answer()
         {
             QuestionId = q.Id,
             ExamAttemptId = attempt.Id
@@ -92,11 +90,11 @@ public class ExamService : BaseService<Exam>, IExamService
         if (attempt == null)
             throw new BizException(BizException.Error.NotFound, $"Não encontramos a tentativa de exame '{finishDto.ExamAttemptId.ToString()}'.");
 
-        if(attempt.Status == ExamAttemptStatus.Completed)
+        if (attempt.Status == ExamAttemptStatus.Completed)
             throw new BizException(BizException.Error.BadRequest, "Esta tentativa de exame já foi finalizada.");
-        
-        if(userId != attempt.UserId)
-                throw new BizException(BizException.Error.Forbidden, "Você não tem permissão para finalizar esta tentativa de exame porque não é sua.");
+
+        if (userId != attempt.UserId)
+            throw new BizException(BizException.Error.Forbidden, "Você não tem permissão para finalizar esta tentativa de exame porque não é sua.");
 
         // 2 - popular respostas
         foreach (var answer in attempt.Answers)
@@ -104,7 +102,7 @@ public class ExamService : BaseService<Exam>, IExamService
             var answerDto = finishDto.Answers.FirstOrDefault(a => a.QuestionId == answer.QuestionId);
             if (answerDto == null)
                 throw new BizException(BizException.Error.BadRequest, $"Não encontramos a resposta para a questão '{answerDto.QuestionId.ToString()}'.");
-            
+
             answer.SelectedOptions = answerDto.SelectedOptions;
             answer.IsCorrect = answer.SelectedOptions == answer.Question.CorrectOptions;
         }
@@ -133,7 +131,7 @@ public class ExamService : BaseService<Exam>, IExamService
         var attempts = _ctx.ExamAttempts
             .Include(a => a.Exam)
             .Where(a => a.UserId == userId)
-            .OrderByDescending(a => a.CreatedAt)  
+            .OrderByDescending(a => a.CreatedAt)
             .ToList();
 
         var attemptsDto = _mapper.Map<IList<MyExamAttemptDto>>(attempts);
@@ -173,7 +171,7 @@ public class ExamService : BaseService<Exam>, IExamService
             throw new BizException(BizException.Error.BadRequest, "Favor refinar mais o termo de pesquisa.");
 
         var exams = await FullTextSearch(term);
-            
+
         if (!exams.Any())
         {
             try
@@ -192,7 +190,7 @@ public class ExamService : BaseService<Exam>, IExamService
             {
                 _logger.LogError(ex, "Erro ao gerar exame via IA.");
             }
-            
+
         }
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);

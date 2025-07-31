@@ -13,10 +13,6 @@ public class DatabaseSeeder
 
     private readonly ApplicationDbContext _context;
 
-    // 123456
-    private const string PASSWORD_HASH = "n71pJuPLLg4EJkRBf+SRDXHD3x5f1sNI+3Fi5bSjdx4=";
-    private const string PASSWORD_SALT = "Uo5G5EKyKh5GnXy0D57i0w==";
-
 
     public DatabaseSeeder(ApplicationDbContext context)
     {
@@ -27,51 +23,14 @@ public class DatabaseSeeder
     {
         _context.Database.EnsureCreated();
 
-        if (_context.Users.Any()) return;
+        if (_context.Exams.Any()) return;
 
-        AddUsers();
         AddExams();
         AddJavaQuestions();
         AddCSharpQuestions();
         AddNodeJsQuestions();
 
         _context.SaveChanges();
-    }
-
-
-
-    private void AddUsers()
-    {
-        var raffaPai = new User()
-        {
-            Name = "Raffa Pai",
-            Email = "raffacabofrio@gmail.com",
-            Linkedin = "linkedin.com/raffacabofrio",
-            Password = PASSWORD_HASH,
-            PasswordSalt = PASSWORD_SALT,
-            CreatedAt = DateTime.UtcNow,
-            Profile = Profile.Admin,
-            IsEmailVerified = true,
-            IsPhoneVerified = true,
-            Phone = "+5522988317391"
-        };
-
-        var raffaFilho = new User()
-        {
-            Name = "Raffa Filho",
-            Email = "raffabr74@gmail.com",
-            Linkedin = "linkedin.com/in/raffaello-rodrigues-nielsen-ba2782174/",
-            Password = PASSWORD_HASH,
-            PasswordSalt = PASSWORD_SALT,
-            CreatedAt = DateTime.UtcNow,
-            Profile = Profile.Admin,
-            IsEmailVerified = true,
-            IsPhoneVerified = true,
-            Phone = "+5511965412756"
-
-        };
-
-        _context.Users.AddRange(raffaPai, raffaFilho);
     }
 
     private void AddExams()

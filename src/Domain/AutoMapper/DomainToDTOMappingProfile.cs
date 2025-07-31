@@ -20,19 +20,7 @@ public class DomainToDTOMappingProfile : Profile
 
     protected DomainToDTOMappingProfile(string profileName) : base(profileName)
     {
-        CreateMap<User, UserDto>();
 
-        CreateMap<User, UserDtoAdmin>()
-            .ForMember(dest => dest.Password, opt => opt.Ignore());
-
-        CreateMap<User, UserListDTO>();
-        CreateMap<Result<User>, Result<UserDto>>();
-
-        CreateMap<PagedList<User>, PagedList<UserListDTO>>();
-
-        CreateMap<Result<User>, Result<UserDtoAdmin>>();
-
-        CreateMap<AccessHistory, AccessHistoryDto>();
 
         CreateMap<Exam, ExamDto>()
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.GetImageUrl(BaseUrl)));

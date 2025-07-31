@@ -18,7 +18,6 @@ using MockExams.Api.Middleware;
 using MockExams.Api.Services;
 using MockExams.Infra.AwsS3;
 using MockExams.Infra.Database;
-using MockExams.Infra.Email;
 using MockExams.Infra.Sms;
 using MockExams.Infra.UrlShortener;
 using Rollbar.NetPlatformExtensions;
@@ -68,7 +67,6 @@ builder.Services
 builder.Services.AddHttpContextAccessor();
 
 builder.Services
-    .Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"))
     .Configure<ServerSettings>(builder.Configuration.GetSection("ServerSettings"))
     .Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3Settings"))
     .Configure<SmsSettingsTwillio>(builder.Configuration.GetSection("SmsSettingsTwillio"))
