@@ -1,14 +1,13 @@
-﻿using FluentValidation;
-using Microsoft.EntityFrameworkCore;
-using Domain.Common;
+﻿using Domain.Common;
 using Domain.Exceptions;
+using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using MockExams.Infra.Database;
+using MockExams.Infra.Database.UoW;
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
-using MockExams.Infra.Database.UoW;
-using MockExams.Infra.Database;
-using System.Threading;
+using System.Linq.Expressions;
 
 namespace MockExams.Service.Generic
 {
@@ -54,7 +53,7 @@ namespace MockExams.Service.Generic
                     TotalItems = total,
                 };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.Source == "System.Linq.Dynamic.Core")
                     throw new BizException(BizException.Error.BadRequest, ex.Message);
@@ -100,7 +99,7 @@ namespace MockExams.Service.Generic
         {
             var entity = _entity.Find(Id);
 
-            if(entity == null) throw new BizException(BizException.Error.NotFound);
+            if (entity == null) throw new BizException(BizException.Error.NotFound);
 
             _entity.Remove(entity);
             _ctx.SaveChanges();
@@ -120,11 +119,6 @@ namespace MockExams.Service.Generic
             var result = new Result<TEntity>(entity);
             result.SuccessMessage = "Alteração efetuada com sucesso.";
             return result;
-        }
-
-        protected Guid GetCurrentUserId()
-        {
-            return new Guid(Thread.CurrentPrincipal?.Identity?.Name);
         }
 
     }

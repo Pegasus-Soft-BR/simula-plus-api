@@ -1,6 +1,7 @@
 ﻿using Api.Configuration;
 using Api.Middleware;
 using Domain.AutoMapper;
+using Domain.Common;
 using Domain.DTOs;
 using Infra.HttpHandlers;
 using Infra.IA;
@@ -73,6 +74,11 @@ builder.Services
     .Configure<UrlShortenerSettings>(builder.Configuration.GetSection("UrlShortenerSettings"))
     .Configure<IASettings>(builder.Configuration.GetSection("IASettings"))
     .Configure<RollbarOptions>(builder.Configuration.GetSection("Rollbar"));
+
+var serverSettings = builder.Configuration
+    .GetSection("ServerSettings")
+    .Get<ServerSettings>();
+AppSettings.ServerSettings = serverSettings;
 
 builder.Services.AddRollbarLogger(options => options.Filter = (loggerName, logLevel) => logLevel >= LogLevel.Trace);
 

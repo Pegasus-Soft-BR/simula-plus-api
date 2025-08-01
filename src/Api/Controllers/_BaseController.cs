@@ -9,7 +9,6 @@ using System;
 
 namespace MockExams.Api.Controllers;
 
-[GetClaimsFilter]
 [EnableCors("AllowAllHeaders")]
 
 // TODO: colocar um DTO genérico.
@@ -25,7 +24,7 @@ public class BaseController<T> : ControllerBase where T : BaseEntity
 
     [HttpGet("")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [AppAuthorizationFilter("admin")]
     public IActionResult Get([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1, [FromQuery] string order = "CreatedAt desc", [FromQuery] string filter = "")
     {
         var items = _service.PagedList(itemsPerPage, page, order, filter);
@@ -34,7 +33,7 @@ public class BaseController<T> : ControllerBase where T : BaseEntity
 
     [HttpGet("{id}")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [AppAuthorizationFilter("admin")]
     public IActionResult Get([FromRoute] Guid id)
     {
         var item = _service.FindById(id);
@@ -43,7 +42,7 @@ public class BaseController<T> : ControllerBase where T : BaseEntity
 
     [HttpPost("")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [AppAuthorizationFilter("admin")]
     public IActionResult Post([FromBody] T entity)
     {
         var result = _service.Insert(entity);
@@ -54,7 +53,7 @@ public class BaseController<T> : ControllerBase where T : BaseEntity
 
     [HttpDelete("{id}")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [AppAuthorizationFilter("admin")]
     public IActionResult Delete([FromRoute] Guid id)
     {
         var result = _service.Delete(id);
@@ -63,7 +62,7 @@ public class BaseController<T> : ControllerBase where T : BaseEntity
 
     [HttpPut("")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [AppAuthorizationFilter("admin")]
     public IActionResult Put([FromBody] T entity)
     {
         var result = _service.Update(entity);

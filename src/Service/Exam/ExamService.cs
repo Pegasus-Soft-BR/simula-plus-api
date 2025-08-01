@@ -72,6 +72,7 @@ public class ExamService : BaseService<Exam>, IExamService
 
         var startDto = new StartExamAttemptDto()
         {
+            Id = attempt.Id,
             ExamId = examId,
             UserId = userId.Value,
             Questions = _mapper.Map<IList<QuestionDto>>(randomQuestions)
@@ -201,22 +202,21 @@ public class ExamService : BaseService<Exam>, IExamService
     {
         term = term.ToLower().Trim();
 
-        var tokens = term
-            .Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var keywords = term
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(k => k.Length >= 3)
+            .Select(k => $"\"{k}*\"");
 
-        var isaboutClause = string.Join(", ", tokens.Select(t =>
-            $"\"{t.Replace("\"", "").ToUpper()}*\" WEIGHT({(1.0 / tokens.Length).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)})"));
-
-        var fullTextFilter = $"ISABOUT ({isaboutClause})";
+        var containsClause = string.Join(" AND ", keywords);
 
         var sql = $@"
         SELECT TOP 10 e.*
-        FROM CONTAINSTABLE(Exams, (Title, Description), {{0}}) AS ft
+        FROM CONTAINSTABLE(Exams, (Title, Description), '{containsClause}') AS ft
         JOIN Exams e ON e.Id = ft.[KEY]
         ORDER BY ft.[RANK] DESC";
 
         return await _ctx.Exams
-            .FromSqlRaw(sql, fullTextFilter)
+            .FromSqlRaw(sql)
             .ToListAsync();
     }
 }

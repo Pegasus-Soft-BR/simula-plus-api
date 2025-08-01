@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Domain;
 using Domain.Common;
 using Domain.DTOs;
 using Domain.DTOs.Exam;
@@ -9,18 +8,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MockExams.Api.Controllers;
+using MockExams.Api.Extensions;
 using MockExams.Api.Filters;
 using MockExams.Service;
 using MockExams.Service.Authorization;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Controllers;
 
 [Route("api/[controller]")]
-[GetClaimsFilter]
 [EnableCors("AllowAllHeaders")]
 [ApiController]
 public class ExamsController : ControllerBase
@@ -53,18 +51,18 @@ public class ExamsController : ControllerBase
 
     [HttpPost("start-exam-atempt")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StartExamAttemptDto))]
-    public IActionResult StartExamAttempt([FromQuery]Guid ExamId)
+    public IActionResult StartExamAttempt([FromQuery] Guid ExamId)
     {
         var userId = GetCurrentUserId();
-        var startDto =_service.StartExamAttempt(userId, ExamId);
+        var startDto = _service.StartExamAttempt(userId, ExamId);
         return Ok(startDto);
     }
 
     [HttpPost("finish-exam-atempt")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ExamAttemptDto))]
     public IActionResult FinishExamAttempt([FromBody] FinishExamAttemptDto finishDto)
     {
@@ -75,7 +73,7 @@ public class ExamsController : ControllerBase
 
     [HttpGet("my-exam-attempts")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MyExamAttemptDto))]
     public IActionResult MyExamAttempts()
     {
@@ -86,7 +84,7 @@ public class ExamsController : ControllerBase
 
     [HttpGet("my-exam-attempt-details")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MyExamAttemptDetailsDto))]
     public IActionResult MyExamAttemptDetail([FromQuery] Guid attemptId)
     {
@@ -128,8 +126,6 @@ public class ExamsController : ControllerBase
 
     private Guid? GetCurrentUserId()
     {
-        var guidStr = Thread.CurrentPrincipal?.Identity?.Name;
-        if (string.IsNullOrEmpty(guidStr)) return null;
-        else return new Guid(guidStr);
+        return User.GetUserId();
     }
 }

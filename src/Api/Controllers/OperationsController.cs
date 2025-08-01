@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using MockExams.Api.Filters;
 using MockExams.Infra.Sms;
 using MockExams.Infra.UrlShortener;
-using MockExams.Service.Authorization;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -29,7 +28,6 @@ public class OperationsController : ControllerBase
 
     public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener)
     {
-        _validToken = settings.Value.JobExecutorToken;
         _env = env;
         _sms = sms;
         _logger = logger;
@@ -39,7 +37,7 @@ public class OperationsController : ControllerBase
 
     [HttpGet]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     [Route("ForceException")]
     public IActionResult ForceException()
     {
@@ -69,7 +67,7 @@ public class OperationsController : ControllerBase
 
     [HttpPost("SmsTest")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public IActionResult SmsTest([FromQuery] string phone)
     {
         if (string.IsNullOrEmpty(phone))
@@ -84,7 +82,7 @@ public class OperationsController : ControllerBase
 
     [HttpPost("chatgpt-test")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public async Task<IActionResult> ChatGptTest([FromQuery] string prompt)
     {
         if (string.IsNullOrEmpty(prompt))
@@ -96,7 +94,7 @@ public class OperationsController : ControllerBase
 
     [HttpPost("url-shortener-test")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public async Task<IActionResult> UrlShortenerTest([FromQuery] string url)
     {
         if (string.IsNullOrEmpty(url))
