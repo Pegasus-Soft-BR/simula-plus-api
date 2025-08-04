@@ -75,10 +75,10 @@ public class ExamsController : ControllerBase
     [Authorize("Bearer")]
     [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MyExamAttemptDto))]
-    public IActionResult MyExamAttempts()
+    public async Task<IActionResult> MyExamAttempts([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1)
     {
         var userId = GetCurrentUserId();
-        var results = _service.MyExamAttempts(userId);
+        var results = await _service.MyExamAttemptsAsync(userId, itemsPerPage, page);
         return Ok(results);
     }
 

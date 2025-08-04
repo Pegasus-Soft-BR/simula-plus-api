@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain;
+using Domain.Common;
 using Domain.DTOs;
 using Domain.DTOs.Exam;
 using Domain.Enums;
@@ -123,21 +124,38 @@ public class ExamService : BaseService<Exam>, IExamService
         return attemptDto;
     }
 
-    public IList<MyExamAttemptDto> MyExamAttempts(Guid? userId)
+    public async Task<PagedList<MyExamAttemptDto>> MyExamAttemptsAsync(Guid? userId, int itemsPerPage = 10, int page = 1)
     {
         if (!userId.HasValue)
             throw new BizException(BizException.Error.NotAuthorized);
 
+        if (itemsPerPage <= 0 || itemsPerPage > MaxItemsPerPage)
+            throw new BizException(BizException.Error.BadRequest, $"itemsPerPage deve ser um valor entre 1 e {MaxItemsPerPage}.");
 
-        var attempts = _ctx.ExamAttempts
+        var query = _ctx.ExamAttempts
+            .AsNoTracking()
             .Include(a => a.Exam)
-            .Where(a => a.UserId == userId)
+            .Where(a => a.UserId == userId);
+
+        var totalItems = await query.CountAsync();
+
+        var attempts = await query
             .OrderByDescending(a => a.CreatedAt)
-            .ToList();
+            .Skip((page - 1) * itemsPerPage)
+            .Take(itemsPerPage)
+            .ToListAsync();
 
         var attemptsDto = _mapper.Map<IList<MyExamAttemptDto>>(attempts);
-        return attemptsDto;
+
+        return new PagedList<MyExamAttemptDto>
+        {
+            Items = attemptsDto,
+            ItemsPerPage = itemsPerPage,
+            Page = page,
+            TotalItems = totalItems
+        };
     }
+
 
     public MyExamAttemptDetailsDto MyExamAttemptDetails(Guid? userId, Guid attemptId)
     {

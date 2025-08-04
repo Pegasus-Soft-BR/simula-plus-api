@@ -17,6 +17,7 @@ namespace MockExams.Service.Generic
         protected readonly IUnitOfWork _unitOfWork;
         protected readonly IValidator<TEntity> _validator;
         protected readonly DbSet<TEntity> _entity;
+        protected const int MaxItemsPerPage = 100;
 
         public BaseService(ApplicationDbContext context, IUnitOfWork unitOfWork, IValidator<TEntity> validator)
         {
@@ -30,7 +31,10 @@ namespace MockExams.Service.Generic
         {
             try
             {
-                var query = _entity.AsQueryable();
+                if (itemsPerPage <= 0 || itemsPerPage > MaxItemsPerPage)
+                    throw new BizException(BizException.Error.BadRequest, $"itemsPerPage deve ser um valor entre 1 e {MaxItemsPerPage}.");
+
+                var query = _entity.AsQueryable().AsNoTracking();
 
                 if (!string.IsNullOrEmpty(filter))
                     query = query.Where(filter);
