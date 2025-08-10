@@ -11,6 +11,6 @@ public class QuestionDto
     public string Option4 { get; set; }
     public string Option5 { get; set; }
     public int DifficultyLevel { get; set; }
-
+    public bool Multiple { get; set; }
     public Guid Id { get; set; }
 }

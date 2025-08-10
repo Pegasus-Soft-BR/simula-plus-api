@@ -30,7 +30,8 @@ public class DomainToDTOMappingProfile : Profile
         CreateMap<ExamAttempt, ExamAttemptDto>();
         CreateMap<Answer, AnswerDto>();
 
-        CreateMap<Question, QuestionDto>();
+        CreateMap<Question, QuestionDto>()
+            .ForMember(dest => dest.Multiple, opt => opt.MapFrom(src => src.CorrectOptions.Contains(',')));
 
         CreateMap<ExamAttempt, MyExamAttemptDto>()
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Exam.GetImageUrl(BaseUrl)));
@@ -43,7 +44,8 @@ public class DomainToDTOMappingProfile : Profile
             .ForMember(dest => dest.Option3, opt => opt.MapFrom(src => src.Question.Option3))
             .ForMember(dest => dest.Option4, opt => opt.MapFrom(src => src.Question.Option4))
             .ForMember(dest => dest.Option5, opt => opt.MapFrom(src => src.Question.Option5))
-            .ForMember(dest => dest.CorrectOptions, opt => opt.MapFrom(src => src.Question.CorrectOptions));
+            .ForMember(dest => dest.CorrectOptions, opt => opt.MapFrom(src => src.Question.CorrectOptions))
+            .ForMember(dest => dest.Multiple, opt => opt.MapFrom(src => src.Question.CorrectOptions.Contains(',')));
 
         CreateMap<ExamAttempt, MyExamAttemptDetailsDto>();
 
