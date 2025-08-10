@@ -175,6 +175,7 @@ public class ExamService : BaseService<Exam>, IExamService
         var result = _mapper.Map<MyExamAttemptDetailsDto>(attempt.Exam);
 
         result.Id = attempt.Id;
+        result.CreatedAt = attempt.CreatedAt;
         result.TimeSpentSeconds = attempt.TimeSpentSeconds;
         result.Score = attempt.Score;
         result.FinishedAt = attempt.FinishedAt;
