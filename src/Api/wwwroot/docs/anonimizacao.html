@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <title>Anonimização de Conta — Simula+</title>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css" />
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .mdl-layout__content {
+            padding: 16px;
+            max-width: 800px;
+            margin: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            color: #3f51b5;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 1.6em;
+        }
+
+        h2 {
+            font-size: 1.3em;
+        }
+
+        .section {
+            background: #fff;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .alert {
+            border-left: 4px solid #e53935;
+            background: #fff7f7;
+        }
+
+        .muted {
+            color: #607d8b;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        .step-list {
+            counter-reset: step;
+            list-style: none;
+            padding-left: 0;
+        }
+
+            .step-list li {
+                counter-increment: step;
+                margin: 10px 0;
+                position: relative;
+                padding-left: 44px;
+                min-height: 28px;
+            }
+
+                .step-list li::before {
+                    content: counter(step);
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 28px;
+                    height: 28px;
+                    line-height: 28px;
+                    border-radius: 50%;
+                    background: #3f51b5;
+                    color: #fff;
+                    text-align: center;
+                    font-weight: 700;
+                }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mdl-layout__content">
+
+        <div class="section">
+            <h1>Anonimização de Conta — Simula+</h1>
+            <p><strong>Última atualização:</strong> 10/08/2025</p>
+            <p class="muted">
+                Aqui você encontra instruções claras para anonimizar sua conta. A ação é definitiva.
+            </p>
+        </div>
+
+        <div class="section alert">
+            <h2>Atenção: ação irreversível</h2>
+            <ul>
+                <li>Sua conta será <strong>anonimizada</strong> e você será desconectado automaticamente.</li>
+                <li>Não será possível recuperar seu perfil, preferências ou o vínculo dos seus resultados com você.</li>
+                <li>Dados <em>agregados/estatísticos</em> podem ser mantidos sem identificar o usuário.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Como anonimizar pelo app?</h2>
+            <ol class="step-list">
+                <li>Abra o aplicativo <strong>Simula+</strong>.</li>
+                <li>Toque no <strong>menu hambúrguer</strong> (☰).</li>
+                <li>Acesse <strong>LGPD</strong> → <strong>Anonimizar conta</strong>.</li>
+                <li>Confirme com sua <strong>senha</strong> para finalizar.</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>O que será removido</h2>
+            <ul>
+                <li>Dados pessoais (ex.: nome, e-mail, identificadores).</li>
+                <li>Preferências do perfil e configurações associadas.</li>
+                <li>Vínculo entre você e tentativas/resultados de exames.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>O que pode permanecer (sem identificar você)</h2>
+            <ul>
+                <li>Métricas agregadas de uso e estatísticas de desempenho.</li>
+                <li>Registros necessários para cumprir obrigações legais, quando aplicável.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Antes de prosseguir</h2>
+            <ul>
+                <li>Baixe qualquer relatório ou comprovante que deseje guardar.</li>
+                <li>Revise se você realmente deseja encerrar o vínculo da sua conta.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Perguntas frequentes</h2>
+            <p><strong>Posso desfazer?</strong><br>Não. A anonimização é definitiva.</p>
+            <p>
+                <strong>Perco meus resultados?</strong><br>
+                Você perde o <em>vínculo pessoal</em> com os resultados. Estatísticas gerais podem seguir existindo de forma anônima.
+            </p>
+            <p>
+                <strong>Não lembro minha senha.</strong><br>
+                Use a recuperação de senha no app em <em>Entrar → Esqueci minha senha</em>.
+            </p>
+            <p>
+                <strong>Preciso de ajuda.</strong><br>
+                No app, acesse <em>Menu → Suporte</em>.
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
