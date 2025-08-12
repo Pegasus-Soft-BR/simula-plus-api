@@ -30,7 +30,7 @@ public class ChatGptClient : IIAClient
             model = "gpt-4o-mini", // mais barato
             messages = new[]
             {
-                        new { role = "system", content = "Você é um especialista em simulados técnicos." },
+                        new { role = "system", content = "Você é um especialista na criação de simulados educacionais de múltipla escolha, abrangendo qualquer área do conhecimento, sempre com conteúdo adequado, verificável e apropriado para todas as idades." },
                         new { role = "user", content = prompt }
                     },
             temperature = 0.7
