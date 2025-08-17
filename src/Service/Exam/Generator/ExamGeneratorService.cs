@@ -43,7 +43,7 @@ public class ExamGeneratorService : IExamGeneratorService
 
     private string PromptFactory(string term)
     {
-        var totalQuestions = 3;
+        var totalQuestions = 15;
 
         var prompt = $$"""
         Você é um gerador de simulados educacionais para o app Simula+ de acordo com o termo pesquisado.
@@ -76,6 +76,7 @@ public class ExamGeneratorService : IExamGeneratorService
         - Distribua a dificuldade (≈5 fáceis, ≈5 médias, ≈5 difíceis).
         - Opções curtas (≈100 caracteres cada), sem gírias nem ofensas.
         - Permita múltiplas corretas (1 a 5), sem duplicatas; use índices 1–5 separados por vírgula (ex.: "2,4").
+        - difficultyLevel: 1 (fácil), 2 (média), 3 (difícil).
 
         Limites:
         - "title": ≤ 80 caracteres, chamativo e coerente com o tema.
