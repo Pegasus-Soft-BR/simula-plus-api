@@ -1,29 +1,27 @@
 ﻿using AutoMapper;
 using Domain;
+using Domain.Common;
+using Domain.DTOs;
+using Domain.DTOs.Exam;
+using Domain.Enums;
+using Domain.Exceptions;
 using FluentValidation;
-using MockExams.Infra.Database.UoW;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MockExams.Infra.Database;
+using MockExams.Infra.Database.UoW;
 using MockExams.Infra.Sms;
 using MockExams.Service.Generic;
-using Domain.DTOs;
-using System;
-using Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Collections.Generic;
-using Domain.Enums;
-using Domain.DTOs.Exam;
-using System.Threading.Tasks;
-using Domain.Common;
 using Service.Exam.Generator;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MockExams.Service;
 
-public class ExamService : BaseService<Exam>, IExamService
+public class ExamService : BaseService<Exam, ExamDto>, IExamService
 {
-    private readonly IMapper _mapper;
     private readonly IExamGeneratorService _generator;
     protected ILogger<ExamService> _logger;
 
@@ -31,9 +29,8 @@ public class ExamService : BaseService<Exam>, IExamService
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        IUserEmailService userEmailService, ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator)
+        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator, mapper)
     {
-        _mapper = mapper;
         _generator = generator;
         _logger = logger;
     }
@@ -41,7 +38,7 @@ public class ExamService : BaseService<Exam>, IExamService
     public StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId)
     {
         // 1 - validar
-        if(!userId.HasValue)
+        if (!userId.HasValue)
             throw new BizException(BizException.Error.NotAuthorized);
 
         var exam = _ctx.Exams.FirstOrDefault(e => e.Id == examId);
@@ -60,10 +57,10 @@ public class ExamService : BaseService<Exam>, IExamService
         var randomQuestions = _ctx.Questions
             .Where(q => q.ExamId == examId)
             .OrderBy(q => Guid.NewGuid()) // Ordena aleatoriamente
-            .Take( exam.TotalQuestionsPerAttempt ) // Seleciona N perguntas
+            .Take(exam.TotalQuestionsPerAttempt) // Seleciona N perguntas
             .ToList();
 
-        attempt.Answers = randomQuestions.Select(q => new Answer() 
+        attempt.Answers = randomQuestions.Select(q => new Answer()
         {
             QuestionId = q.Id,
             ExamAttemptId = attempt.Id
@@ -74,6 +71,7 @@ public class ExamService : BaseService<Exam>, IExamService
 
         var startDto = new StartExamAttemptDto()
         {
+            Id = attempt.Id,
             ExamId = examId,
             UserId = userId.Value,
             Questions = _mapper.Map<IList<QuestionDto>>(randomQuestions)
@@ -92,11 +90,11 @@ public class ExamService : BaseService<Exam>, IExamService
         if (attempt == null)
             throw new BizException(BizException.Error.NotFound, $"Não encontramos a tentativa de exame '{finishDto.ExamAttemptId.ToString()}'.");
 
-        if(attempt.Status == ExamAttemptStatus.Completed)
+        if (attempt.Status == ExamAttemptStatus.Completed)
             throw new BizException(BizException.Error.BadRequest, "Esta tentativa de exame já foi finalizada.");
-        
-        if(userId != attempt.UserId)
-                throw new BizException(BizException.Error.Forbidden, "Você não tem permissão para finalizar esta tentativa de exame porque não é sua.");
+
+        if (userId != attempt.UserId)
+            throw new BizException(BizException.Error.Forbidden, "Você não tem permissão para finalizar esta tentativa de exame porque não é sua.");
 
         // 2 - popular respostas
         foreach (var answer in attempt.Answers)
@@ -104,7 +102,7 @@ public class ExamService : BaseService<Exam>, IExamService
             var answerDto = finishDto.Answers.FirstOrDefault(a => a.QuestionId == answer.QuestionId);
             if (answerDto == null)
                 throw new BizException(BizException.Error.BadRequest, $"Não encontramos a resposta para a questão '{answerDto.QuestionId.ToString()}'.");
-            
+
             answer.SelectedOptions = answerDto.SelectedOptions;
             answer.IsCorrect = answer.SelectedOptions == answer.Question.CorrectOptions;
         }
@@ -124,21 +122,38 @@ public class ExamService : BaseService<Exam>, IExamService
         return attemptDto;
     }
 
-    public IList<MyExamAttemptDto> MyExamAttempts(Guid? userId)
+    public async Task<PagedList<MyExamAttemptDto>> MyExamAttemptsAsync(Guid? userId, int itemsPerPage = 10, int page = 1)
     {
         if (!userId.HasValue)
             throw new BizException(BizException.Error.NotAuthorized);
 
+        if (itemsPerPage <= 0 || itemsPerPage > MaxItemsPerPage)
+            throw new BizException(BizException.Error.BadRequest, $"itemsPerPage deve ser um valor entre 1 e {MaxItemsPerPage}.");
 
-        var attempts = _ctx.ExamAttempts
+        var query = _ctx.ExamAttempts
+            .AsNoTracking()
             .Include(a => a.Exam)
-            .Where(a => a.UserId == userId)
-            .OrderByDescending(a => a.CreatedAt)  
-            .ToList();
+            .Where(a => a.UserId == userId);
+
+        var totalItems = await query.CountAsync();
+
+        var attempts = await query
+            .OrderByDescending(a => a.CreatedAt)
+            .Skip((page - 1) * itemsPerPage)
+            .Take(itemsPerPage)
+            .ToListAsync();
 
         var attemptsDto = _mapper.Map<IList<MyExamAttemptDto>>(attempts);
-        return attemptsDto;
+
+        return new PagedList<MyExamAttemptDto>
+        {
+            Items = attemptsDto,
+            ItemsPerPage = itemsPerPage,
+            Page = page,
+            TotalItems = totalItems
+        };
     }
+
 
     public MyExamAttemptDetailsDto MyExamAttemptDetails(Guid? userId, Guid attemptId)
     {
@@ -158,6 +173,7 @@ public class ExamService : BaseService<Exam>, IExamService
         var result = _mapper.Map<MyExamAttemptDetailsDto>(attempt.Exam);
 
         result.Id = attempt.Id;
+        result.CreatedAt = attempt.CreatedAt;
         result.TimeSpentSeconds = attempt.TimeSpentSeconds;
         result.Score = attempt.Score;
         result.FinishedAt = attempt.FinishedAt;
@@ -173,7 +189,7 @@ public class ExamService : BaseService<Exam>, IExamService
             throw new BizException(BizException.Error.BadRequest, "Favor refinar mais o termo de pesquisa.");
 
         var exams = await FullTextSearch(term);
-            
+
         if (!exams.Any())
         {
             try
@@ -192,7 +208,7 @@ public class ExamService : BaseService<Exam>, IExamService
             {
                 _logger.LogError(ex, "Erro ao gerar exame via IA.");
             }
-            
+
         }
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);
@@ -203,22 +219,21 @@ public class ExamService : BaseService<Exam>, IExamService
     {
         term = term.ToLower().Trim();
 
-        var tokens = term
-            .Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var keywords = term
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(k => k.Length >= 3)
+            .Select(k => $"\"{k}*\"");
 
-        var isaboutClause = string.Join(", ", tokens.Select(t =>
-            $"\"{t.Replace("\"", "").ToUpper()}*\" WEIGHT({(1.0 / tokens.Length).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)})"));
-
-        var fullTextFilter = $"ISABOUT ({isaboutClause})";
+        var containsClause = string.Join(" AND ", keywords);
 
         var sql = $@"
         SELECT TOP 10 e.*
-        FROM CONTAINSTABLE(Exams, (Title, Description), {{0}}) AS ft
+        FROM CONTAINSTABLE(Exams, (Title, Description), '{containsClause}') AS ft
         JOIN Exams e ON e.Id = ft.[KEY]
         ORDER BY ft.[RANK] DESC";
 
         return await _ctx.Exams
-            .FromSqlRaw(sql, fullTextFilter)
+            .FromSqlRaw(sql)
             .ToListAsync();
     }
 }

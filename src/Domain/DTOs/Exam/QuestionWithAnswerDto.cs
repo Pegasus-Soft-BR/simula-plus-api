@@ -14,4 +14,5 @@ public class QuestionWithAnswerDto
     public string CorrectOptions { get; set; }
     public string SelectedOptions { get; set; }
     public bool IsCorrect { get; set; }
+    public bool Multiple { get; set; }
 }

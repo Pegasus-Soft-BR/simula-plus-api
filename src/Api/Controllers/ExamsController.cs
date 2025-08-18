@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Domain;
 using Domain.Common;
 using Domain.DTOs;
 using Domain.DTOs.Exam;
@@ -9,37 +8,35 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MockExams.Api.Controllers;
+using MockExams.Api.Extensions;
 using MockExams.Api.Filters;
 using MockExams.Service;
-using MockExams.Service.Authorization;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Api.Controllers;
 
 [Route("api/[controller]")]
-[GetClaimsFilter]
 [EnableCors("AllowAllHeaders")]
 [ApiController]
 public class ExamsController : ControllerBase
 {
-    private ILogger<OperationsController> logger;
+    private ILogger<OperationsController> _logger;
     private readonly IExamService _service;
     private readonly AutoMapper.IMapper _mapper;
 
     public ExamsController(ILogger<OperationsController> logger, IExamService service, IMapper mapper)
     {
-        this.logger = logger;
+        _logger = logger;
         _service = service;
         _mapper = mapper;
     }
 
     [HttpGet("list-exams")]
-    public IActionResult GetExams([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1, [FromQuery] string order = "CreatedAt desc", [FromQuery] string filter = "")
+    public async Task<IActionResult> GetExams([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1, [FromQuery] string order = "CreatedAt desc", [FromQuery] string filter = "")
     {
-        var exams = _service.PagedList(itemsPerPage, page, order, filter);
+        var exams = await _service.PagedListAsync(itemsPerPage, page, order, filter);
         var examsDto = _mapper.Map<PagedList<ExamDto>>(exams);
         return Ok(examsDto);
     }
@@ -53,18 +50,18 @@ public class ExamsController : ControllerBase
 
     [HttpPost("start-exam-atempt")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StartExamAttemptDto))]
-    public IActionResult StartExamAttempt([FromQuery]Guid ExamId)
+    public IActionResult StartExamAttempt([FromQuery] Guid ExamId)
     {
         var userId = GetCurrentUserId();
-        var startDto =_service.StartExamAttempt(userId, ExamId);
+        var startDto = _service.StartExamAttempt(userId, ExamId);
         return Ok(startDto);
     }
 
     [HttpPost("finish-exam-atempt")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ExamAttemptDto))]
     public IActionResult FinishExamAttempt([FromBody] FinishExamAttemptDto finishDto)
     {
@@ -75,18 +72,18 @@ public class ExamsController : ControllerBase
 
     [HttpGet("my-exam-attempts")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MyExamAttemptDto))]
-    public IActionResult MyExamAttempts()
+    public async Task<IActionResult> MyExamAttempts([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1)
     {
         var userId = GetCurrentUserId();
-        var results = _service.MyExamAttempts(userId);
+        var results = await _service.MyExamAttemptsAsync(userId, itemsPerPage, page);
         return Ok(results);
     }
 
     [HttpGet("my-exam-attempt-details")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Usuario)]
+    [AppAuthorizationFilter("usuario")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MyExamAttemptDetailsDto))]
     public IActionResult MyExamAttemptDetail([FromQuery] Guid attemptId)
     {
@@ -128,8 +125,6 @@ public class ExamsController : ControllerBase
 
     private Guid? GetCurrentUserId()
     {
-        var guidStr = Thread.CurrentPrincipal?.Identity?.Name;
-        if (string.IsNullOrEmpty(guidStr)) return null;
-        else return new Guid(guidStr);
+        return User.GetUserId();
     }
 }

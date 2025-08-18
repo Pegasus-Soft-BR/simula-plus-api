@@ -1,20 +1,17 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Domain.DTOs;
+using Infra.IA;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockExams.Api.Filters;
-using Domain.DTOs;
-using MockExams.Infra.Email;
 using MockExams.Infra.Sms;
-using MockExams.Jobs;
-using MockExams.Service.Authorization;
+using MockExams.Infra.UrlShortener;
 using System;
 using System.Reflection;
-using Infra.IA;
 using System.Threading.Tasks;
-using MockExams.Infra.UrlShortener;
 
 namespace MockExams.Api.Controllers;
 
@@ -22,21 +19,15 @@ namespace MockExams.Api.Controllers;
 [EnableCors("AllowAllHeaders")]
 public class OperationsController : ControllerBase
 {
-
-    protected IJobExecutor _executor;
     protected string _validToken;
-    IEmailService _emailService;
     private readonly IWebHostEnvironment _env;
     protected ISmsService _sms;
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
     protected IUrlShortener _urlShortener;
 
-    public OperationsController(IJobExecutor executor, IOptions<ServerSettings> settings, IEmailService emailService, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener)
+    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener)
     {
-        _executor = executor;
-        _validToken = settings.Value.JobExecutorToken;
-        _emailService = emailService;
         _env = env;
         _sms = sms;
         _logger = logger;
@@ -46,7 +37,7 @@ public class OperationsController : ControllerBase
 
     [HttpGet]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     [Route("ForceException")]
     public IActionResult ForceException()
     {
@@ -74,31 +65,9 @@ public class OperationsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("JobExecutor")]
-    [Throttle(Name = "JobExecutor", Seconds = 5, VaryByIp = false)]
-    public IActionResult Executor()
-    {
-        if (!_IsValidJobToken())
-            return Unauthorized();
-        else
-            return Ok(_executor.Execute());
-    }
-
-    [HttpPost("EmailTest")]
-    [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
-    public IActionResult EmailTest([FromBody] EmailTestDTO emailVM)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        _emailService.Test(emailVM.Email, emailVM.Name).Wait();
-        return Ok();
-    }
-
     [HttpPost("SmsTest")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public IActionResult SmsTest([FromQuery] string phone)
     {
         if (string.IsNullOrEmpty(phone))
@@ -113,7 +82,7 @@ public class OperationsController : ControllerBase
 
     [HttpPost("chatgpt-test")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public async Task<IActionResult> ChatGptTest([FromQuery] string prompt)
     {
         if (string.IsNullOrEmpty(prompt))
@@ -125,7 +94,7 @@ public class OperationsController : ControllerBase
 
     [HttpPost("url-shortener-test")]
     [Authorize("Bearer")]
-    [AuthorizationFilter(Permissions.Permission.Admin)]
+    [PegasusAuthorizationFilter("Admin")]
     public async Task<IActionResult> UrlShortenerTest([FromQuery] string url)
     {
         if (string.IsNullOrEmpty(url))

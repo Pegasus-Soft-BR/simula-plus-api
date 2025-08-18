@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace MockExams.Service;
 
-public interface IExamService : IBaseService<Exam>
+public interface IExamService : IBaseService<Exam, ExamDto>
 {
-    
+
     StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId);
 
     ExamAttemptDto FinishExamAttempt(Guid? userId, FinishExamAttemptDto finishDto);
-    IList<MyExamAttemptDto> MyExamAttempts(Guid? userId);
+    Task<PagedList<MyExamAttemptDto>> MyExamAttemptsAsync(Guid? userId, int itemsPerPage, int page);
     MyExamAttemptDetailsDto MyExamAttemptDetails(Guid? userId, Guid attemptId);
     Task<List<ExamDto>> Search(string term = "");
 }

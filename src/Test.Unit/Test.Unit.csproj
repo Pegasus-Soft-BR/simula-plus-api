@@ -21,4 +21,10 @@
   <ItemGroup>
     <Compile Remove="Jobs\1 - ChooseDateReminderTest.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Domain\" />
+    <Folder Include="Mocks\" />
+    <Folder Include="Services\" />
+    <Folder Include="Validators\" />
+  </ItemGroup>
 </Project>

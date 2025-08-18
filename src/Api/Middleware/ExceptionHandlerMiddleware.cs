@@ -1,83 +1,79 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Domain.Common;
+using Domain.Exceptions;
+using Helper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Rollbar;
 using MockExams.Api.Services;
-using Domain.Common;
-using Domain.Exceptions;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using Helper;
+using Rollbar;
+using System;
+using System.Threading.Tasks;
 
-namespace MockExams.Api.Middleware
+namespace MockExams.Api.Middleware;
+
+public class ExceptionHandlerMiddleware
 {
-    public class ExceptionHandlerMiddleware
+    private readonly RequestDelegate _next;
+
+    public ExceptionHandlerMiddleware(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public ExceptionHandlerMiddleware(RequestDelegate next)
+    public async Task Invoke(HttpContext httpContext)
+    {
+        try
         {
-            _next = next;
+            await _next(httpContext);
         }
-
-        public async Task Invoke(HttpContext httpContext)
+        catch (BizException ex)
         {
-            try
-            {
-                await _next(httpContext);
-            }
-            catch (BizException ex)
-            {
-                var result = new Result();
-                result.Messages.Add(ex.Message);
-                var jsonResponse = JsonHelper.ToJson(result);
+            var result = new Result();
+            result.Messages.Add(ex.Message);
+            var jsonResponse = JsonHelper.ToJson(result);
 
-                httpContext.Response.Clear();
-                httpContext.Response.StatusCode = (int)ex.ErrorType;
-                httpContext.Response.Headers.Add("Content-Type", "application/json");
-                await httpContext.Response.WriteAsync(jsonResponse);
-            }
-            catch (Exception ex)
-            {
-                if (RollbarConfigurator.IsActive)
-                {
-                    SendErrorToRollbar(ex);
-                }
-
-                var result = new Result();
-                result.Messages.Add(ex.ToString());
-
-                // detalhes do erro real pra facilitar o desenvolvimento.
-                if (ex is AggregateException)
-                    result.Messages.Add(ex.InnerException.ToString());
-
-                var jsonResponse = JsonHelper.ToJson(result);
-
-                httpContext.Response.Clear();
-                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                httpContext.Response.Headers.Add("Content-Type", "application/json");
-                await httpContext.Response.WriteAsync(jsonResponse);
-            }
+            httpContext.Response.Clear();
+            httpContext.Response.StatusCode = (int)ex.ErrorType;
+            httpContext.Response.Headers.Add("Content-Type", "application/json");
+            await httpContext.Response.WriteAsync(jsonResponse);
         }
-
-        private void SendErrorToRollbar(Exception ex)
+        catch (Exception ex)
         {
-            object error = new
+            if (RollbarConfigurator.IsActive)
             {
-                Message = ex.Message,
-                StackTrace = ex.StackTrace,
-                Source = ex.Source
-            };
+                SendErrorToRollbar(ex);
+            }
 
-            RollbarLocator.RollbarInstance.Error(error);
+            var result = new Result();
+            result.Messages.Add(ex.ToString());
+
+            // detalhes do erro real pra facilitar o desenvolvimento.
+            if (ex is AggregateException)
+                result.Messages.Add(ex.InnerException.ToString());
+
+            var jsonResponse = JsonHelper.ToJson(result);
+
+            httpContext.Response.Clear();
+            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            httpContext.Response.Headers.Add("Content-Type", "application/json");
+            await httpContext.Response.WriteAsync(jsonResponse);
         }
     }
 
-    // Extension method used to add the middleware to the HTTP request pipeline.
-    public static class ExceptionHandlerMiddlewareExtensions
+    private void SendErrorToRollbar(Exception ex)
     {
-        public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder) => builder.UseMiddleware<ExceptionHandlerMiddleware>();
-    }
+        object error = new
+        {
+            Message = ex.Message,
+            StackTrace = ex.StackTrace,
+            Source = ex.Source
+        };
 
+        RollbarLocator.RollbarInstance.Error(error);
+    }
+}
+
+// Extension method used to add the middleware to the HTTP request pipeline.
+public static class ExceptionHandlerMiddlewareExtensions
+{
+    public static IApplicationBuilder UseExceptionHandlerMiddleware(this IApplicationBuilder builder) => builder.UseMiddleware<ExceptionHandlerMiddleware>();
 }

@@ -15,13 +15,12 @@ public class ExamAttempt : BaseEntity
 
 
     // Essas propriedades são preenchidas ao finalizar o exame
-    public int? TimeSpentSeconds { get; set; } 
-    public int? Score { get; set; } 
+    public int? TimeSpentSeconds { get; set; }
+    public int? Score { get; set; }
     public DateTime? FinishedAt { get; set; }
 
 
     // Relacionamentos
-    public virtual User User { get; set; }
     public virtual Exam Exam { get; set; }
 
     public virtual IList<Answer> Answers { get; set; }
