@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MockExams.Service;
 
-public interface IExamService : IBaseService<Exam>
+public interface IExamService : IBaseService<Exam, ExamDto>
 {
 
     StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId);

@@ -20,9 +20,8 @@ using System.Threading.Tasks;
 
 namespace MockExams.Service;
 
-public class ExamService : BaseService<Exam>, IExamService
+public class ExamService : BaseService<Exam, ExamDto>, IExamService
 {
-    private readonly IMapper _mapper;
     private readonly IExamGeneratorService _generator;
     protected ILogger<ExamService> _logger;
 
@@ -30,9 +29,8 @@ public class ExamService : BaseService<Exam>, IExamService
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator)
+        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator, mapper)
     {
-        _mapper = mapper;
         _generator = generator;
         _logger = logger;
     }

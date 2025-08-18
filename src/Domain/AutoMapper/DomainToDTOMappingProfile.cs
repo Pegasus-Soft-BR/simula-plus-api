@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using Domain;
-using Domain.DTOs;
 using Domain.Common;
-using System.Collections.Generic;
+using Domain.DTOs;
 using Domain.DTOs.Exam;
 
 namespace Domain.AutoMapper;
@@ -20,10 +18,10 @@ public class DomainToDTOMappingProfile : Profile
 
     protected DomainToDTOMappingProfile(string profileName) : base(profileName)
     {
-
-
         CreateMap<Exam, ExamDto>()
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.GetImageUrl(BaseUrl)));
+
+        CreateMap<Result<Exam>, Result<ExamDto>>();
 
         CreateMap<PagedList<Exam>, PagedList<ExamDto>>();
 
@@ -32,6 +30,10 @@ public class DomainToDTOMappingProfile : Profile
 
         CreateMap<Question, QuestionDto>()
             .ForMember(dest => dest.Multiple, opt => opt.MapFrom(src => src.CorrectOptions.Contains(',')));
+
+        CreateMap<Result<Question>, Result<QuestionDto>>();
+
+        CreateMap<PagedList<Question>, PagedList<QuestionDto>>();
 
         CreateMap<ExamAttempt, MyExamAttemptDto>()
             .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Exam.GetImageUrl(BaseUrl)));

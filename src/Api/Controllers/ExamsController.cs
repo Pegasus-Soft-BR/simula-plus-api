@@ -11,7 +11,6 @@ using MockExams.Api.Controllers;
 using MockExams.Api.Extensions;
 using MockExams.Api.Filters;
 using MockExams.Service;
-using MockExams.Service.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,21 +22,21 @@ namespace Api.Controllers;
 [ApiController]
 public class ExamsController : ControllerBase
 {
-    private ILogger<OperationsController> logger;
+    private ILogger<OperationsController> _logger;
     private readonly IExamService _service;
     private readonly AutoMapper.IMapper _mapper;
 
     public ExamsController(ILogger<OperationsController> logger, IExamService service, IMapper mapper)
     {
-        this.logger = logger;
+        _logger = logger;
         _service = service;
         _mapper = mapper;
     }
 
     [HttpGet("list-exams")]
-    public IActionResult GetExams([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1, [FromQuery] string order = "CreatedAt desc", [FromQuery] string filter = "")
+    public async Task<IActionResult> GetExams([FromQuery] int itemsPerPage = 10, [FromQuery] int page = 1, [FromQuery] string order = "CreatedAt desc", [FromQuery] string filter = "")
     {
-        var exams = _service.PagedList(itemsPerPage, page, order, filter);
+        var exams = await _service.PagedListAsync(itemsPerPage, page, order, filter);
         var examsDto = _mapper.Map<PagedList<ExamDto>>(exams);
         return Ok(examsDto);
     }

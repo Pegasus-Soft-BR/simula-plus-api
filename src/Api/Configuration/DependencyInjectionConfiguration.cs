@@ -20,9 +20,11 @@ public static class DependencyInjectionConfiguration
         //services
         services.AddScoped<IExamService, ExamService>();
         services.AddScoped<IExamGeneratorService, ExamGeneratorService>();
+        services.AddScoped<IQuestionService, QuestionService>();
 
         //validators
         services.AddScoped<IValidator<Exam>, ExamValidator>();
+        services.AddScoped<IValidator<Question>, QuestionValidator>();
 
         //Infra Services
         services.AddSingleton<IAwsS3Service, AwsS3Service>();

@@ -1,4 +1,6 @@
-﻿using Domain.Common;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Domain.Common;
 using Domain.Exceptions;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -8,122 +10,150 @@ using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
-namespace MockExams.Service.Generic
+namespace MockExams.Service.Generic;
+
+public class BaseService<TEntity, TDto> : IBaseService<TEntity, TDto>
+    where TEntity : BaseEntity
+    where TDto : class
 {
-    public class BaseService<TEntity> : IBaseService<TEntity> where TEntity : BaseEntity
+    protected readonly ApplicationDbContext _ctx;
+    protected readonly IUnitOfWork _unitOfWork;
+    protected readonly IValidator<TEntity> _validator;
+    protected readonly IMapper _mapper;
+    protected readonly DbSet<TEntity> _entity;
+    protected const int MaxItemsPerPage = 100;
+
+    public BaseService(ApplicationDbContext context, IUnitOfWork unitOfWork, IValidator<TEntity> validator, IMapper mapper)
     {
-        protected readonly ApplicationDbContext _ctx;
-        protected readonly IUnitOfWork _unitOfWork;
-        protected readonly IValidator<TEntity> _validator;
-        protected readonly DbSet<TEntity> _entity;
-        protected const int MaxItemsPerPage = 100;
+        _ctx = context;
+        _unitOfWork = unitOfWork;
+        _validator = validator;
+        _mapper = mapper;
+        _entity = _ctx.Set<TEntity>();
+    }
 
-        public BaseService(ApplicationDbContext context, IUnitOfWork unitOfWork, IValidator<TEntity> validator)
+    public virtual async Task<PagedList<TDto>> PagedListAsync(
+        int itemsPerPage = 10,
+        int page = 1,
+        string order = "CreatedAt desc",
+        string filter = "",
+        string[] includes = null)
+    {
+        try
         {
-            _ctx = context;
-            _unitOfWork = unitOfWork;
-            _validator = validator;
-            _entity = _ctx.Set<TEntity>();
-        }
+            if (itemsPerPage <= 0 || itemsPerPage > MaxItemsPerPage)
+                throw new BizException(BizException.Error.BadRequest, $"itemsPerPage deve ser um valor entre 1 e {MaxItemsPerPage}.");
 
-        public virtual PagedList<TEntity> PagedList(int itemsPerPage = 10, int page = 1, string order = "CreatedAt Desc", string filter = "")
-        {
-            try
+            var query = _entity.AsNoTracking().AsQueryable();
+
+            if (includes != null)
             {
-                if (itemsPerPage <= 0 || itemsPerPage > MaxItemsPerPage)
-                    throw new BizException(BizException.Error.BadRequest, $"itemsPerPage deve ser um valor entre 1 e {MaxItemsPerPage}.");
-
-                var query = _entity.AsQueryable().AsNoTracking();
-
-                if (!string.IsNullOrEmpty(filter))
-                    query = query.Where(filter);
-
-                var total = query.Count();
-
-                var skip = itemsPerPage * (page - 1);
-
-                var items = query
-                    .OrderBy(order)
-                    .Skip(skip)
-                    .Take(itemsPerPage)
-                    .ToList();
-
-                return new PagedList<TEntity>
-                {
-                    Items = items,
-                    ItemsPerPage = itemsPerPage,
-                    Page = page,
-                    TotalItems = total,
-                };
-            }
-            catch (Exception ex)
-            {
-                if (ex.Source == "System.Linq.Dynamic.Core")
-                    throw new BizException(BizException.Error.BadRequest, ex.Message);
-                else
-                    throw;
+                foreach (var inc in includes)
+                    query = query.Include(inc);
             }
 
-        }
+            if (!string.IsNullOrWhiteSpace(filter))
+                query = query.Where(filter);
 
-        public virtual TEntity FindById(Guid Id)
-        {
-            var entity = _entity.Find(Id);
+            var total = await query.CountAsync();
 
-            if (entity == null) throw new BizException(BizException.Error.NotFound);
+            var items = await query
+                .OrderBy(order)
+                .Skip(itemsPerPage * (page - 1))
+                .Take(itemsPerPage)
+                .ProjectTo<TDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
 
-            return entity;
-        }
-
-        protected Result<TEntity> Validate(TEntity entity) => new Result<TEntity>(_validator.Validate(entity));
-
-        protected Result<TEntity> Validate(TEntity entity, params Expression<Func<TEntity, object>>[] filter) => new Result<TEntity>(_validator.Validate(entity, options => options.IncludeProperties(filter)));
-
-        public virtual Result<TEntity> Insert(TEntity entity)
-        {
-            var result = Validate(entity);
-
-            if (result.Success)
+            return new PagedList<TDto>
             {
-                _entity.Add(entity);
-                _ctx.SaveChanges();
-                result.Value = entity;
-                result.SuccessMessage = "Inclusão efetuada com sucesso.";
-            }
+                Items = items,
+                ItemsPerPage = itemsPerPage,
+                Page = page,
+                TotalItems = total
+            };
+        }
+        catch (Exception ex)
+        {
+            if (ex.Source == "System.Linq.Dynamic.Core")
+                throw new BizException(BizException.Error.BadRequest, ex.Message);
             else
-            {
-                result.Value = null;
-            }
-
-            return result;
+                throw;
         }
+    }
 
-        public Result<TEntity> Delete(Guid Id)
+    public virtual async Task<TEntity> FindByIdAsync(Guid id)
+    {
+        var entity = await _entity.FindAsync(id);
+        if (entity == null)
+            throw new BizException(BizException.Error.NotFound);
+        return entity;
+    }
+
+    protected Result<TEntity> Validate(TEntity entity) => new Result<TEntity>(_validator.Validate(entity));
+
+    protected Result<TEntity> Validate(TEntity entity, params Expression<Func<TEntity, object>>[] filter) =>
+        new Result<TEntity>(_validator.Validate(entity, options => options.IncludeProperties(filter)));
+
+    public virtual async Task<Result<TEntity>> InsertAsync(TEntity entity)
+    {
+        var result = Validate(entity);
+
+        if (result.Success)
         {
-            var entity = _entity.Find(Id);
-
-            if (entity == null) throw new BizException(BizException.Error.NotFound);
-
-            _entity.Remove(entity);
-            _ctx.SaveChanges();
-
-            var result = new Result<TEntity>(entity);
-            result.SuccessMessage = "Exclusão efetuada com sucesso.";
-            return result;
+            await _entity.AddAsync(entity);
+            await _ctx.SaveChangesAsync();
+            result.Value = entity;
+            result.SuccessMessage = "Inclusão efetuada com sucesso.";
         }
-
-        public virtual Result<TEntity> Update(TEntity entity)
+        else
         {
-            if (!_entity.Any(e => e.Id == entity.Id)) throw new BizException(BizException.Error.NotFound);
+            result.Value = null;
+        }
 
-            _entity.Update(entity);
-            _ctx.SaveChanges();
+        return result;
+    }
 
-            var result = new Result<TEntity>(entity);
-            result.SuccessMessage = "Alteração efetuada com sucesso.";
+    public virtual async Task<Result<TEntity>> DeleteAsync(Guid id)
+    {
+        var entity = await _entity.FindAsync(id);
+        if (entity == null)
+            throw new BizException(BizException.Error.NotFound);
+
+        _entity.Remove(entity);
+        await _ctx.SaveChangesAsync();
+
+        var result = new Result<TEntity>(entity);
+        result.SuccessMessage = "Exclusão efetuada com sucesso.";
+        return result;
+    }
+
+    public virtual async Task<Result<TEntity>> UpdateAsync(TDto dto)
+    {
+        var idProperty = typeof(TDto).GetProperty("Id");
+        if (idProperty == null)
+            throw new BizException("O DTO precisa ter uma propriedade 'Id'.");
+
+        var id = (Guid)idProperty.GetValue(dto)!;
+        var existingEntity = await _entity.FindAsync(id);
+        if (existingEntity == null)
+            throw new BizException(BizException.Error.NotFound);
+
+        _mapper.Map(dto, existingEntity);
+        existingEntity.UpdatedAt = DateTime.UtcNow;
+
+        var result = Validate(existingEntity);
+        if (!result.Success)
+        {
+            result.Value = null;
             return result;
         }
 
+        await _ctx.SaveChangesAsync();
+
+        result.Value = existingEntity;
+        result.SuccessMessage = "Alteração efetuada com sucesso.";
+        return result;
     }
 }

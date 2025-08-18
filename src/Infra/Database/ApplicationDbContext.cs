@@ -1,11 +1,11 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Domain;
-using Domain.DTOs;
+﻿using Domain;
+using Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using Domain;
-using Domain.DTOs;
 using MockExams.Infra.Database.Mapping;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MockExams.Infra.Database;
 
@@ -28,5 +28,29 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         this.SetUtcOnDatabase(modelBuilder);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        AtualizarUpdatedAt();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    public override int SaveChanges()
+    {
+        AtualizarUpdatedAt();
+        return base.SaveChanges();
+    }
+
+    private void AtualizarUpdatedAt()
+    {
+        var entries = ChangeTracker
+            .Entries<BaseEntity>()
+            .Where(e => e.State == EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            entry.Entity.UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
