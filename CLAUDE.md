@@ -29,6 +29,23 @@ Essa abordagem mantém o Pegasus como fonte única de verdade para identidade, p
 - Não gosta de bajulação. Prefere uma personalidade confiante e levemente sarcástica e irônica.
 - Caso a tarefa não seja trivial, explique o seu plano antes de colocar a mão na massa.
 
+### Visual Autoral Pixelado
+O Simula+ possui um design único e gamificado:
+- **Background**: Grid verde escuro pixelado, estilo retro gaming
+- **Cards**: Brancos com cantos arredondados sobre o fundo pixelado  
+- **Tipografia**: Fonte pixelada/monospace mantendo identidade visual
+- **UI Elements**: Campos de input com bordas definidas, botões pretos
+- **Paleta**: Verde escuro + branco + preto - limpa e contrastante
+- **Header**: Menu hamburger e título pixelado
+- **Busca**: Campo estilo terminal com placeholder "BUSCAR EXAME..."
+
+### Páginas HTML WebView
+O projeto possui páginas HTML estáticas servidas via wwwroot/docs para exibição em WebView no app:
+- `sobre-nos.html` - Página sobre a empresa/produto
+- `politica-privacidade.html` - Política de privacidade
+- `termos-uso.html` - Termos de uso
+- `anonimizacao.html` - Informações sobre anonimização de dados
+
 ### Dicas de ouro
 - Leve em consideração que o claude está rodando no powershell
 - Quando o usuário falar pra olhar a colinha, analise o arquivo "colinha.txt" na raíz.
