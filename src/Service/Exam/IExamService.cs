@@ -1,6 +1,7 @@
 ﻿using Domain;
 using Domain.Common;
 using Domain.DTOs;
+using Domain.DTOs.Commom;
 using Domain.DTOs.Exam;
 using MockExams.Service.Generic;
 using System;
@@ -17,5 +18,5 @@ public interface IExamService : IBaseService<Exam, ExamDto>
     ExamAttemptDto FinishExamAttempt(Guid? userId, FinishExamAttemptDto finishDto);
     Task<PagedList<MyExamAttemptDto>> MyExamAttemptsAsync(Guid? userId, int itemsPerPage, int page);
     MyExamAttemptDetailsDto MyExamAttemptDetails(Guid? userId, Guid attemptId);
-    Task<List<ExamDto>> Search(string term = "");
+    Task<List<ExamDto>> Search(string term = "", UserDto? currentUser = null);
 }

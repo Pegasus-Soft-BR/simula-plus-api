@@ -80,8 +80,8 @@ public class ExamGeneratorService : IExamGeneratorService
 
         Limites:
         - "title": ≤ 80 caracteres, chamativo e coerente com o tema.
-        - "description": 1–2 frases (≤ 160 caracteres), com palavras‑chave relevantes.
-        - "questions[x].title": ≤ ~200 caracteres.
+        - "description": 1–2 frases (≤ 300 caracteres), com palavras‑chave relevantes. Se o tema for C# , inclua também .NET, se o tema for springboot, inclua também Java e assim por diante.
+        - "questions[x].title": ≤ ~300 caracteres.
 
         FORMATO DE SAÍDA — JSON VÁLIDO (SEM markdown, SEM texto extra, SEM comentários):
         {

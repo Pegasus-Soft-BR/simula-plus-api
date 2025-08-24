@@ -116,7 +116,7 @@ public class OperationsController : ControllerBase
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(message))
             return BadRequest("Favor informar nome, email e mensagem.");
 
-        var request = new ContactUsRequest
+        var request = new AdminNotificationRequest
         {
             App = "mock-exams",
             Name = name,
@@ -126,7 +126,7 @@ public class OperationsController : ControllerBase
             Message = $"[TESTE] {message}"
         };
 
-        var result = await _pegasusApiClient.SendContactUsAsync(request);
+        var result = await _pegasusApiClient.NotifyAdminsAsync(request);
         return Ok(result);
     }
 

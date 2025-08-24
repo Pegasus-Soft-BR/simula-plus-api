@@ -8,7 +8,13 @@
       "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src/**)",
       "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Properties/**)",
       "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api/**)",
-      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)"
+      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
+      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
+      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
+      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Controllers/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Domain\\DTOs/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Service\\ContactUs/**)"
     ],
     "deny": [],
     "ask": []

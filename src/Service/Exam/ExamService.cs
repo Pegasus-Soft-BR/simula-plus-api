@@ -2,10 +2,13 @@
 using Domain;
 using Domain.Common;
 using Domain.DTOs;
+using Domain.DTOs.Commom;
 using Domain.DTOs.Exam;
 using Domain.Enums;
 using Domain.Exceptions;
 using FluentValidation;
+using Infra.PegasusApi;
+using Infra.PegasusApi.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockExams.Infra.Database;
@@ -23,16 +26,18 @@ namespace MockExams.Service;
 public class ExamService : BaseService<Exam, ExamDto>, IExamService
 {
     private readonly IExamGeneratorService _generator;
+    private readonly IPegasusApiClient _pegasusApiClient;
     protected ILogger<ExamService> _logger;
 
 
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger) : base(context, unitOfWork, validator, mapper)
+        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger, IPegasusApiClient pegasusApiClient) : base(context, unitOfWork, validator, mapper)
     {
         _generator = generator;
         _logger = logger;
+        _pegasusApiClient = pegasusApiClient;
     }
 
     public StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId)
@@ -183,7 +188,7 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
         return result;
     }
 
-    public async Task<List<ExamDto>> Search(string term = "")
+    public async Task<List<ExamDto>> Search(string term = "", UserDto? currentUser = null)
     {
         if (string.IsNullOrEmpty(term) || term.Length < 2)
             throw new BizException(BizException.Error.BadRequest, "Favor refinar mais o termo de pesquisa.");
@@ -201,6 +206,7 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
                 newExam.TotalQuestionsPerAttempt = 5;
                 _ctx.Exams.Add(newExam);
                 _ctx.SaveChanges();
+                await NotifyAdminsOfGeneratedExamAsync(term, currentUser, newExam);
 
                 exams.Add(newExam);
             }
@@ -213,6 +219,42 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);
         return examsDto;
+    }
+
+    private async Task NotifyAdminsOfGeneratedExamAsync(string term, UserDto currentUser, Exam newExam)
+    {
+        // Notificar admins sobre simulado gerado por IA
+        try
+        {
+            var userInfo = currentUser != null && !string.IsNullOrEmpty(currentUser.Name)
+                ? $"{currentUser.Name} ({currentUser.Email})"
+                : "Usuário anônimo";
+
+            var message = $@"<strong>🤖 Novo simulado gerado por IA</strong>
+                <ul>
+                <li><strong>Título:</strong> {newExam.Title}</li>
+                <li><strong>Termo pesquisado:</strong> {term}</li>
+                <li><strong>Solicitado por:</strong> {userInfo}</li>
+                <li><strong>Total de questões:</strong> {newExam.Questions?.Count ?? 0}</li>
+                </ul>";
+
+            await _pegasusApiClient.NotifyAdminsAsync(new AdminNotificationRequest
+            {
+                App = "mock-exams",
+                Name = "Simula+ (Sistema)",
+                Email = "noreply@pegasus-soft.com.br",
+                Phone = "22 988317391",
+                Business = "",
+                Message = message,
+                Subject = "🤖 Novo simulado gerado por IA"
+            });
+
+            _logger.LogInformation("Admins notificados sobre simulado gerado por IA: {ExamTitle} por usuário {UserId}", newExam.Title, currentUser?.Id);
+        }
+        catch (Exception notifyEx)
+        {
+            _logger.LogError(notifyEx, "Erro ao notificar admins sobre simulado gerado por IA: {ExamTitle}", newExam.Title);
+        }
     }
 
     private async Task<List<Exam>> FullTextSearch(string term)

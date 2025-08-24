@@ -5,5 +5,5 @@ namespace Infra.PegasusApi;
 
 public interface IPegasusApiClient
 {
-    Task<ContactUsResponse> SendContactUsAsync(ContactUsRequest request);
+    Task<AdminNotificationResponse> NotifyAdminsAsync(AdminNotificationRequest request);
 }

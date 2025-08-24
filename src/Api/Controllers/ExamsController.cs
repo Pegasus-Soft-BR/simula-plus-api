@@ -42,9 +42,12 @@ public class ExamsController : ControllerBase
     }
 
     [HttpGet("search")]
+    [Authorize("Bearer")]
+    [AppAuthorizationFilter("usuario")]
     public async Task<IActionResult> Search([FromQuery] string term = "")
     {
-        var examsDto = await _service.Search(term);
+        var currentUser = User.GetUser();
+        var examsDto = await _service.Search(term, currentUser);
         return Ok(examsDto);
     }
 

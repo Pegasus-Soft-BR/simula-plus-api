@@ -24,7 +24,7 @@ public class PegasusApiClient : IPegasusApiClient
         _logger = logger;
     }
 
-    public async Task<ContactUsResponse> SendContactUsAsync(ContactUsRequest request)
+    public async Task<AdminNotificationResponse> NotifyAdminsAsync(AdminNotificationRequest request)
     {
         if (!_settings.IsActive)
         {
@@ -50,7 +50,7 @@ public class PegasusApiClient : IPegasusApiClient
             // Se houver erro HTTP, tenta deserializar a resposta de erro
             try
             {
-                var errorResponse = JsonHelper.FromJson<ContactUsResponse>(content);
+                var errorResponse = JsonHelper.FromJson<AdminNotificationResponse>(content);
                 _logger.LogWarning("[PEGASUS API] Resposta de erro da API: {errorMessages}", string.Join(", ", errorResponse.ErrorMessages));
                 return errorResponse;
             }
@@ -58,7 +58,7 @@ public class PegasusApiClient : IPegasusApiClient
             {
                 _logger.LogError(ex, "[PEGASUS API] Erro ao deserializar resposta de erro");
                 // Se não conseguir deserializar, retorna erro genérico
-                return new ContactUsResponse
+                return new AdminNotificationResponse
                 {
                     Success = false,
                     ErrorMessages = new List<string> { $"Erro HTTP {(int)response.StatusCode}: {response.ReasonPhrase}" }
@@ -66,7 +66,7 @@ public class PegasusApiClient : IPegasusApiClient
             }
         }
 
-        var successResponse = JsonHelper.FromJson<ContactUsResponse>(content);
+        var successResponse = JsonHelper.FromJson<AdminNotificationResponse>(content);
         _logger.LogDebug("[PEGASUS API] Mensagem enviada com sucesso: {successMessage}", successResponse.SuccessMessage);
         return successResponse;
     }
