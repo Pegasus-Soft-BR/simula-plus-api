@@ -258,3 +258,6 @@ appsettings.Production.json
 
 # docker app build files
 Sharebook/out/*
+
+# apoio ao claude
+colinha.txt

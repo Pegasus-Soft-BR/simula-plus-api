@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build)",
+      "Bash(dotnet build:*)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Middleware/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Properties/**)",
+      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api/**)",
+      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

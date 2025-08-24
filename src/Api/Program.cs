@@ -1,10 +1,10 @@
 ﻿using Api.Configuration;
-using Api.Middleware;
 using Domain.AutoMapper;
 using Domain.Common;
 using Domain.DTOs;
 using Infra.HttpHandlers;
 using Infra.IA;
+using Infra.PegasusApi;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
@@ -51,7 +51,9 @@ builder.Services.AddHealthChecks()
 
 // Configuração de serviços e dependências
 builder.Services.AddTransient<LoggingHttpMessageHandler>();
+builder.Services.AddTransient<TraceIdPropagationHandler>();
 builder.Services.AddHttpClient("DefaultClient")
+    .AddHttpMessageHandler<TraceIdPropagationHandler>()
     .AddHttpMessageHandler<LoggingHttpMessageHandler>();
 
 builder.Services.DependencyInjection();
@@ -73,6 +75,7 @@ builder.Services
     .Configure<SmsSettingsTwillio>(builder.Configuration.GetSection("SmsSettingsTwillio"))
     .Configure<UrlShortenerSettings>(builder.Configuration.GetSection("UrlShortenerSettings"))
     .Configure<IASettings>(builder.Configuration.GetSection("IASettings"))
+    .Configure<PegasusApiSettings>(builder.Configuration.GetSection("PegasusApiSettings"))
     .Configure<RollbarOptions>(builder.Configuration.GetSection("Rollbar"));
 
 var serverSettings = builder.Configuration
@@ -110,7 +113,6 @@ RollbarConfigurator.Configure(
 var app = builder.Build();
 
 // Middlewares
-app.UseMiddleware<TraceIdOverrideMiddleware>();
 app.UseSerilogRequestLogging();
 
 if (bool.TryParse(builder.Configuration["Rollbar:IsActive"], out var rollbarActive) && rollbarActive)

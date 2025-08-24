@@ -2,6 +2,7 @@
 using Domain.Validators;
 using FluentValidation;
 using Infra.IA;
+using Infra.PegasusApi;
 using Microsoft.Extensions.DependencyInjection;
 using MockExams.Infra.AwsS3;
 using MockExams.Infra.Database.UoW;
@@ -31,6 +32,7 @@ public static class DependencyInjectionConfiguration
         services.AddSingleton<ISmsService, SmsServiceTwilio>();
         services.AddSingleton<IUrlShortener, UrlShortener>();
         services.AddSingleton<IIAClient, ChatGptClient>();
+        services.AddSingleton<IPegasusApiClient, PegasusApiClient>();
 
         //UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();

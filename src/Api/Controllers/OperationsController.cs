@@ -1,5 +1,7 @@
 ﻿using Domain.DTOs;
 using Infra.IA;
+using Infra.PegasusApi;
+using Infra.PegasusApi.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
@@ -25,14 +27,16 @@ public class OperationsController : ControllerBase
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
     protected IUrlShortener _urlShortener;
+    protected IPegasusApiClient _pegasusApiClient;
 
-    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener)
+    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener, IPegasusApiClient pegasusApiClient)
     {
         _env = env;
         _sms = sms;
         _logger = logger;
         _chatGptClient = chatGptClient;
         _urlShortener = urlShortener;
+        _pegasusApiClient = pegasusApiClient;
     }
 
     [HttpGet]
@@ -101,6 +105,28 @@ public class OperationsController : ControllerBase
             return BadRequest("Favor informar uma url.");
 
         var result = _urlShortener.GetShortUrl(url);
+        return Ok(result);
+    }
+
+    [HttpPost("pegasus-contact-us-test")]
+    [Authorize("Bearer")]
+    [PegasusAuthorizationFilter("Admin")]
+    public async Task<IActionResult> PegasusContactUsTest([FromQuery] string name, [FromQuery] string email, [FromQuery] string message)
+    {
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(message))
+            return BadRequest("Favor informar nome, email e mensagem.");
+
+        var request = new ContactUsRequest
+        {
+            App = "mock-exams",
+            Name = name,
+            Email = email,
+            Phone = "22 988317391", // Telefone válido para teste
+            Business = "",
+            Message = $"[TESTE] {message}"
+        };
+
+        var result = await _pegasusApiClient.SendContactUsAsync(request);
         return Ok(result);
     }
 
