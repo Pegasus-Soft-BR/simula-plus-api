@@ -43,7 +43,7 @@ public class ExamGeneratorService : IExamGeneratorService
 
     private string PromptFactory(string term)
     {
-        var totalQuestions = 15;
+        var totalQuestions = 5;
 
         var prompt = $$"""
         Você é um gerador de simulados educacionais para o app Simula+ de acordo com o termo pesquisado.
