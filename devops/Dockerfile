@@ -35,5 +35,11 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
+# acho que não precisa mais disso, pois já está no launchSettings.json
+# ENV ASPNETCORE_URLS=http://+:8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s \
+  CMD curl -fsS http://127.0.0.1:8080/api/Operations/Ping || exit 1
+
 # Set entry point
 ENTRYPOINT ["dotnet", "Api.dll"]
