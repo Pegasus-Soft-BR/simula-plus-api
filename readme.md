@@ -5,11 +5,6 @@ Sistema de simulados para exames e entrevistas.
 ## Pré-requisitos
 - Visual Studio Community 2022.
 
-## Plugins recomendados
-
-- [sonar lint](https://marketplace.visualstudio.com/items?itemName=SonarSource.SonarLintforVisualStudio2022)
-- [aws explorer](https://marketplace.visualstudio.com/items?itemName=AmazonWebServices.AWSToolkitforVisualStudio2022)
-
 
 # Database Migrations
 ```bash
@@ -19,8 +14,7 @@ Add-Migration NOME_SIGNIFICATIVO
 Update-Database
 ```
 # Ambientes 
-- [DEV](http://mockexams.sharebook.com.br/swagger)
-- PROD - em breve.
+- [PROD](https://mock-exams.pegasus-soft.com.br//swagger)
 
 
 # colinha bash
@@ -56,7 +50,7 @@ docker run --name my-sql-server -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=LpVgt4fLMZbg7
 
 ```
 
-# Como usar o Docker?
+# Build e Run com Docker!
 ```bash
 # Build da imagem
 docker build -t simula-plus-api -f devops/Dockerfile .

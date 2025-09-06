@@ -3,8 +3,6 @@ using Domain.Exceptions;
 using Helper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using MockExams.Api.Services;
-using Rollbar;
 using System;
 using System.Threading.Tasks;
 
@@ -38,11 +36,6 @@ public class ExceptionHandlerMiddleware
         }
         catch (Exception ex)
         {
-            if (RollbarConfigurator.IsActive)
-            {
-                SendErrorToRollbar(ex);
-            }
-
             var result = new Result();
             result.Messages.Add(ex.ToString());
 
@@ -59,17 +52,6 @@ public class ExceptionHandlerMiddleware
         }
     }
 
-    private void SendErrorToRollbar(Exception ex)
-    {
-        object error = new
-        {
-            Message = ex.Message,
-            StackTrace = ex.StackTrace,
-            Source = ex.Source
-        };
-
-        RollbarLocator.RollbarInstance.Error(error);
-    }
 }
 
 // Extension method used to add the middleware to the HTTP request pipeline.

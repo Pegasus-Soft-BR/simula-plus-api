@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MockExams.Infra.Database;
 using MockExams.Infra.Database.UoW;
-using MockExams.Infra.Sms;
 using MockExams.Service.Generic;
 using Service.Exam.Generator;
 using System;
@@ -33,7 +32,7 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        ISmsService smsService, IExamGeneratorService generator, ILogger<ExamService> logger, IPegasusApiClient pegasusApiClient) : base(context, unitOfWork, validator, mapper)
+        IExamGeneratorService generator, ILogger<ExamService> logger, IPegasusApiClient pegasusApiClient) : base(context, unitOfWork, validator, mapper)
     {
         _generator = generator;
         _logger = logger;

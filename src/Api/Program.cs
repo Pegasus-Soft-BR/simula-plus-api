@@ -13,15 +13,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using MockExams.Api.Configuration;
 using MockExams.Api.Middleware;
-using MockExams.Api.Services;
-using MockExams.Infra.AwsS3;
 using MockExams.Infra.Database;
-using MockExams.Infra.Sms;
-using MockExams.Infra.UrlShortener;
-using Rollbar.NetPlatformExtensions;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System;
@@ -71,19 +65,13 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services
     .Configure<ServerSettings>(builder.Configuration.GetSection("ServerSettings"))
-    .Configure<AwsS3Settings>(builder.Configuration.GetSection("AwsS3Settings"))
-    .Configure<SmsSettingsTwillio>(builder.Configuration.GetSection("SmsSettingsTwillio"))
-    .Configure<UrlShortenerSettings>(builder.Configuration.GetSection("UrlShortenerSettings"))
     .Configure<IASettings>(builder.Configuration.GetSection("IASettings"))
-    .Configure<PegasusApiSettings>(builder.Configuration.GetSection("PegasusApiSettings"))
-    .Configure<RollbarOptions>(builder.Configuration.GetSection("Rollbar"));
+    .Configure<PegasusApiSettings>(builder.Configuration.GetSection("PegasusApiSettings"));
 
 var serverSettings = builder.Configuration
     .GetSection("ServerSettings")
     .Get<ServerSettings>();
 AppSettings.ServerSettings = serverSettings;
-
-builder.Services.AddRollbarLogger(options => options.Filter = (loggerName, logLevel) => logLevel >= LogLevel.Trace);
 
 JWTConfig.RegisterJWT(builder.Services, builder.Configuration);
 builder.Services.RegisterSwagger();
@@ -102,23 +90,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         .UseSqlServer(connectionString)
 );
 
-// Rollbar Config direto no início
-RollbarConfigurator.Configure(
-    environment: builder.Configuration["Rollbar:Environment"],
-    isActive: builder.Configuration["Rollbar:IsActive"],
-    token: builder.Configuration["Rollbar:Token"],
-    logLevel: builder.Configuration["Rollbar:LogLevel"]
-);
-
 var app = builder.Build();
 
 // Middlewares
 app.UseSerilogRequestLogging();
-
-if (bool.TryParse(builder.Configuration["Rollbar:IsActive"], out var rollbarActive) && rollbarActive)
-{
-    app.UseRollbarMiddleware();
-}
 
 app.UseExceptionHandlerMiddleware();
 app.UseHealthChecks("/hc");

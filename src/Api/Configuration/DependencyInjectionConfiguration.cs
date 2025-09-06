@@ -4,10 +4,7 @@ using FluentValidation;
 using Infra.IA;
 using Infra.PegasusApi;
 using Microsoft.Extensions.DependencyInjection;
-using MockExams.Infra.AwsS3;
 using MockExams.Infra.Database.UoW;
-using MockExams.Infra.Sms;
-using MockExams.Infra.UrlShortener;
 using MockExams.Service;
 using Service.Exam.Generator;
 
@@ -28,9 +25,6 @@ public static class DependencyInjectionConfiguration
         services.AddScoped<IValidator<Question>, QuestionValidator>();
 
         //Infra Services
-        services.AddSingleton<IAwsS3Service, AwsS3Service>();
-        services.AddSingleton<ISmsService, SmsServiceTwilio>();
-        services.AddSingleton<IUrlShortener, UrlShortener>();
         services.AddSingleton<IIAClient, ChatGptClient>();
         services.AddSingleton<IPegasusApiClient, PegasusApiClient>();
 

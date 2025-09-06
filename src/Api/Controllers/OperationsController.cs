@@ -9,8 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockExams.Api.Filters;
-using MockExams.Infra.Sms;
-using MockExams.Infra.UrlShortener;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -23,19 +21,15 @@ public class OperationsController : ControllerBase
 {
     protected string _validToken;
     private readonly IWebHostEnvironment _env;
-    protected ISmsService _sms;
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
-    protected IUrlShortener _urlShortener;
     protected IPegasusApiClient _pegasusApiClient;
 
-    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ISmsService sms, ILogger<OperationsController> logger, IIAClient chatGptClient, IUrlShortener urlShortener, IPegasusApiClient pegasusApiClient)
+    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ILogger<OperationsController> logger, IIAClient chatGptClient, IPegasusApiClient pegasusApiClient)
     {
         _env = env;
-        _sms = sms;
         _logger = logger;
         _chatGptClient = chatGptClient;
-        _urlShortener = urlShortener;
         _pegasusApiClient = pegasusApiClient;
     }
 
@@ -69,21 +63,6 @@ public class OperationsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("SmsTest")]
-    [Authorize("Bearer")]
-    [PegasusAuthorizationFilter("Admin")]
-    public IActionResult SmsTest([FromQuery] string phone)
-    {
-        if (string.IsNullOrEmpty(phone))
-            return BadRequest("Favor informar um número de telefone.");
-
-        Random random = new Random();
-        int numeroAleatorio = random.Next(1, 101);
-
-        _sms.SendMessage(phone, $"Teste de SMS {numeroAleatorio}").Wait();
-        return Ok();
-    }
-
     [HttpPost("chatgpt-test")]
     [Authorize("Bearer")]
     [PegasusAuthorizationFilter("Admin")]
@@ -93,18 +72,6 @@ public class OperationsController : ControllerBase
             return BadRequest("Favor informar um prompt.");
 
         var result = await _chatGptClient.GenerateAsync(prompt);
-        return Ok(result);
-    }
-
-    [HttpPost("url-shortener-test")]
-    [Authorize("Bearer")]
-    [PegasusAuthorizationFilter("Admin")]
-    public async Task<IActionResult> UrlShortenerTest([FromQuery] string url)
-    {
-        if (string.IsNullOrEmpty(url))
-            return BadRequest("Favor informar uma url.");
-
-        var result = _urlShortener.GetShortUrl(url);
         return Ok(result);
     }
 

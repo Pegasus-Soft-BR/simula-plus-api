@@ -1,8 +1,5 @@
-﻿using Amazon.Runtime;
-using Helper;
-using Microsoft.Extensions.Configuration;
+﻿using Helper;
 using Microsoft.Extensions.Options;
-using MockExams.Infra.Sms;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
