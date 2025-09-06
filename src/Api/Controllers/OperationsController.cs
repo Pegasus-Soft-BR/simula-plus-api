@@ -46,10 +46,6 @@ public class OperationsController : ControllerBase
     [HttpGet("Ping")]
     public IActionResult Ping()
     {
-        _logger.LogInformation("Log 01 - sdsaldj dljsdlajd");
-        _logger.LogWarning("Log 02 - sldajasjdasjjd ddsad");
-        _logger.LogError("Log 03 - sdçlsakdç skd kçd ç dkdsçkçlk");
-
         var result = new
         {
             Service = Assembly.GetEntryAssembly().GetName().Name.ToString(),
