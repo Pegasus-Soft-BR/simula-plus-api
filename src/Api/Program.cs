@@ -18,15 +18,11 @@ using MockExams.Api.Middleware;
 using MockExams.Infra.Database;
 using Serilog;
 using Serilog.Sinks.MSSqlServer;
-using System;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Verifica ambiente Docker para selecionar a connection string correta
-var isDocker = Environment.GetEnvironmentVariable("IS_DOCKER");
-var connectionStringKey = isDocker == "1" ? "DefaultConnectionDocker" : "DefaultConnection";
-var connectionString = builder.Configuration.GetConnectionString(connectionStringKey);
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Serilog
 builder.Host.UseSerilog((ctx, lc) => lc

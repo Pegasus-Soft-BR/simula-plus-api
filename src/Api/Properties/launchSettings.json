@@ -1,22 +1,7 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:50708/",
-      "sslPort": 0
-    }
-  },
+
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "swagger",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "MockExams.Api": {
+    "simula-plus-api": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
