@@ -1,4 +1,4 @@
-# mock-exams-backend
+# simula-plus-api
 
 Sistema de simulados para exames e entrevistas.
 
