@@ -55,3 +55,12 @@ docker run --name my-sql-server -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=LpVgt4fLMZbg7
 # "Server=localhost;Database=DEVinSales;User=sa;Password=LpVgt4fLMZbg7kcp"
 
 ```
+
+# Como usar o Docker?
+```bash
+# Build da imagem
+docker build -t simula-plus-api -f devops/Dockerfile .
+
+# Run com environment Development
+docker run -d -p 8000:8080 -e ASPNETCORE_ENVIRONMENT=Development --name simula-plus-container simula-plus-api
+```
