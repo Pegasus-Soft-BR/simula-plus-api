@@ -58,3 +58,5 @@ docker build -t simula-plus-api -f devops/Dockerfile .
 # Run com environment Development
 docker run -d -p 8000:8080 -e ASPNETCORE_ENVIRONMENT=Development --name simula-plus-container simula-plus-api
 ```
+
+teste
