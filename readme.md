@@ -14,7 +14,7 @@ Add-Migration NOME_SIGNIFICATIVO
 Update-Database
 ```
 # Ambientes 
-- [PROD](https://mock-exams.pegasus-soft.com.br//swagger)
+- [PROD](https://mock-exams.pegasus-soft.com.br/swagger)
 
 
 # colinha bash
@@ -22,19 +22,19 @@ Update-Database
 ```bash
 
 # restaurar dependências
-dotnet restore ./src/SalveElas.sln
+dotnet restore ./src/MockExams.sln
 
 # build
-dotnet build .\src\SalveElas.Api\SalveElas.Api.csproj --verbosity minimal
+dotnet build ./src/Api/Api.csproj --verbosity minimal
 
 # rodar o app com hot reload
-dotnet watch --project ./ShareBook/ShareBook.Api/ShareBook.Api.csproj
+dotnet watch --project ./src/Api/Api.csproj
 
 # rodar os testes
-dotnet test ./ShareBook/ShareBook.Test.Unit/ShareBook.Test.Unit.csproj
+dotnet test ./src/Tests/Tests.csproj
 
 # clean
-dotnet clean .\src\SalveElas.Api\SalveElas.Api.csproj --verbosity quiet
+dotnet clean ./src/Api/Api.csproj --verbosity quiet
 
 ```
 
