@@ -7,7 +7,7 @@ services:
 #      context: ../  # <- raiz do repo
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8001:8080"
     deploy:
       resources:
         limits:
