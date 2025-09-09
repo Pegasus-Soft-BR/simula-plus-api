@@ -16,7 +16,6 @@ public class AnswerMap
             .HasForeignKey(a => a.QuestionId)
             .OnDelete(DeleteBehavior.NoAction);
 
-        // O SQL Server não permite múltiplas ON DELETE CASCADE que possam causar dependências cíclicas.
-        // por isso usamos SetNull para evitar a exceção de dependência cíclica
+        // SQLite tem limitações com foreign keys, mantemos NoAction por compatibilidade
     }
 }

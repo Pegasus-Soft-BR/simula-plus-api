@@ -10,5 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Helper\Helper.csproj" />
     <ProjectReference Include="..\Infra\Infra.csproj" />
+    <ProjectReference Include="..\infra-sql-server\infra-sql-server.csproj" />
   </ItemGroup>
 </Project>

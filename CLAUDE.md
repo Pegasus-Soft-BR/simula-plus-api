@@ -46,6 +46,31 @@ O projeto possui páginas HTML estáticas servidas via wwwroot/docs para exibiç
 - `termos-uso.html` - Termos de uso
 - `anonimizacao.html` - Informações sobre anonimização de dados
 
+### 🗄️ Arquitetura Multi-Database
+O Simula+ agora suporta múltiplos SGBDs através de uma arquitetura modular inspirada no achei-api:
+
+**Estrutura de Projetos:**
+- `infra-sql-server` - Suporte ao SQL Server (padrão)
+- `infra-postgres` - Suporte ao PostgreSQL  
+- `infra-sqlite` - Suporte ao SQLite
+
+**Configuração:**
+- DatabaseProvider no `appsettings.json`: "SqlServer", "Postgres" ou "SQLite"
+- ConnectionStrings para cada SGBD
+- Switch automático via `DatabaseConfiguration.cs`
+
+**Funcionamento:**
+- Todos os projetos infra têm o mesmo `ApplicationDbContext`, `DatabaseSeeder` e `UnitOfWork`
+- A API referencia apenas um projeto infra por vez (atualmente `infra-sql-server`)
+- Troca de SGBD é feita alterando `DatabaseProvider` e a referência do projeto
+- Migrations e contextos específicos para cada provider
+
+**Vantagens:**
+- Flexibilidade total entre SGBDs
+- Código limpo sem interfaces abstratas complexas
+- Migrations específicas para cada banco
+- Facilita deployment em diferentes ambientes
+
 ### Dicas de ouro
 - Leve em consideração que o claude está rodando no powershell
 - Quando o usuário falar pra olhar a colinha, analise o arquivo "colinha.txt" na raíz.

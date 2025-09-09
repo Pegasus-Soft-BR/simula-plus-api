@@ -1,0 +1,16 @@
+version: "1.0"
+
+services:
+  simula-plus-api:
+    container_name: simula-plus-api
+    build:
+      context: ../  # <- raiz do repo
+      dockerfile: devops/Dockerfile
+    ports:
+      - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+    restart: unless-stopped

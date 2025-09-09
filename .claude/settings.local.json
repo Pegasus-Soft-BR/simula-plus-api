@@ -1,24 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build)",
-      "Bash(dotnet build:*)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Middleware/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Properties/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api/**)",
-      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
-      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
-      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
-      "Read(/C:\\Users\\brnra019\\Documents\\Lightshot/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Api\\Controllers/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Domain\\DTOs/**)",
-      "Read(/C:\\REPOS\\_PEGASUS\\pegasus-account-api\\src\\Service\\ContactUs/**)",
-      "Read(/C:\\Users\\brnra019\\Downloads/**)",
-      "Read(/C:\\Users\\brnra019\\Downloads/**)",
-      "Read(/C:\\Users\\brnra019\\Downloads/**)",
-      "WebFetch(domain:pegasus-soft.com.br)"
+      "Bash(Get-ChildItem \"C:\\REPOS\\_PEGASUS\\simula-plus-api\\src\")",
+      "Bash(dotnet sln add:*)"
     ],
     "deny": [],
     "ask": []

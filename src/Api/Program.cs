@@ -22,6 +22,9 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuração de banco de dados. Podemos alternar entre SQL Server, Postgres e SQLite!
+builder.Services.AddDatabaseConfiguration(builder.Configuration);
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Serilog
@@ -80,11 +83,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options
-        .UseLazyLoadingProxies()
-        .UseSqlServer(connectionString)
-);
 
 var app = builder.Build();
 
