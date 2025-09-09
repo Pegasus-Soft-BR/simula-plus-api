@@ -4,7 +4,6 @@ services:
   simula-plus-api:
     container_name: simula-plus-api
     build:
-#      context: ../  # <- raiz do repo
       dockerfile: Dockerfile
     ports:
       - "8001:8080"
