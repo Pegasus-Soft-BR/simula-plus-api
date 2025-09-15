@@ -11,8 +11,8 @@ using MockExams.Infra.Database;
 namespace Infra.Database.Migrations.Sqlite
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250915172352_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20250915211227_InitialCreateSQLite")]
+    partial class InitialCreateSQLite
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,6 +71,9 @@ namespace Infra.Database.Migrations.Sqlite
 
                     b.Property<string>("ImageSlug")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("MyProperty")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TimeSpentMaxSeconds")
                         .HasColumnType("INTEGER");

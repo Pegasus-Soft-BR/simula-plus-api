@@ -1,52 +1,85 @@
 param(
     [Parameter(Mandatory=$true, Position=0)]
-    [ValidateSet("postgres", "sqlserver", "sqlite")]
-    [string]$Provider,
-    
-    [Parameter(Mandatory=$true, Position=1)]
     [string]$MigrationName
 )
 
-Write-Host "Criando migration '$MigrationName' para $Provider..." -ForegroundColor Green
+Write-Host "CRIANDO MIGRATIONS PARA TODOS OS PROVIDERS!" -ForegroundColor Cyan
+Write-Host "Migration: '$MigrationName'" -ForegroundColor White
 
-# Atualiza o appsettings.json para o provider correto
-$appsettingsPath = "src/Api/appsettings.json"
-$appsettingsContent = Get-Content $appsettingsPath | ConvertFrom-Json
+# Backup do appsettings original
+$appsettingsPath = "src/Api/appsettings.Development.json"
+$backupPath = "$appsettingsPath.backup"
+Copy-Item $appsettingsPath $backupPath
 
-switch ($Provider) {
-    "postgres" { 
-        $appsettingsContent.DatabaseProvider = "Postgres"
-        $outputDir = "Postgres"
+# Providers para processar (Postgres primeiro para evitar conflitos)
+$providers = @(
+    @{ Name = "Postgres"; Output = "Postgres"; Display = "PostgreSQL" },
+    @{ Name = "SqlServer"; Output = "SqlServer"; Display = "SQL Server" },
+    @{ Name = "SQLite"; Output = "Sqlite"; Display = "SQLite" }
+)
+
+$successCount = 0
+$errors = @()
+
+try {
+    # Build inicial
+    Write-Host "`nBuilding projeto..." -ForegroundColor Yellow
+    dotnet build src/Api/Api.csproj --verbosity quiet
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "Erro no build inicial"
     }
-    "sqlserver" { 
-        $appsettingsContent.DatabaseProvider = "SqlServer" 
-        $outputDir = "SqlServer"
-    }
-    "sqlite" { 
-        $appsettingsContent.DatabaseProvider = "Sqlite"
-        $outputDir = "Sqlite"
+
+    foreach ($provider in $providers) {
+        Write-Host "`nProcessando $($provider.Display)..." -ForegroundColor Magenta
+        
+        try {
+            # Atualiza appsettings para o provider atual
+            $appsettingsContent = Get-Content $appsettingsPath -Raw | ConvertFrom-Json
+            $appsettingsContent.DatabaseProvider = $provider.Name
+            $appsettingsContent | ConvertTo-Json -Depth 10 | Set-Content $appsettingsPath
+            
+            # Cria migration para este provider
+            $migrationCommand = "dotnet ef migrations add $($MigrationName)$($provider.Name) -p src/Infra -s src/Api --output-dir `"Database/Migrations/$($provider.Output)`""
+            Invoke-Expression $migrationCommand
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "   OK $($provider.Display) - SUCESSO!" -ForegroundColor Green
+                $successCount++
+            } else {
+                $errors += "ERRO $($provider.Display) - FALHOU!"
+                Write-Host "   ERRO $($provider.Display) - FALHOU!" -ForegroundColor Red
+            }
+        }
+        catch {
+            $errors += "ERRO $($provider.Display) - ERRO: $($_.Exception.Message)"
+            Write-Host "   ERRO $($provider.Display) - ERRO: $($_.Exception.Message)" -ForegroundColor Red
+        }
     }
 }
+finally {
+    # Restaura appsettings original
+    Move-Item $backupPath $appsettingsPath -Force
+}
 
-# Salva o appsettings.json atualizado
-$appsettingsContent | ConvertTo-Json -Depth 10 | Set-Content $appsettingsPath
+# Resultado final
+Write-Host "`n" + "="*60 -ForegroundColor Cyan
+Write-Host "RESULTADO FINAL:" -ForegroundColor Cyan
+Write-Host "Sucessos: $successCount/3" -ForegroundColor Green
 
-Write-Host "1. DatabaseProvider configurado para: $($appsettingsContent.DatabaseProvider)" -ForegroundColor Yellow
+if ($errors.Count -gt 0) {
+    Write-Host "Erros:" -ForegroundColor Red
+    $errors | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+}
 
-Write-Host "2. Fazendo build do projeto..." -ForegroundColor Yellow
-dotnet build src/Api/Api.csproj
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "3. Criando migration no projeto Infra..." -ForegroundColor Yellow
-    dotnet ef migrations add $MigrationName -p src/Infra -s src/Api --output-dir "Database/Migrations/$outputDir"
+if ($successCount -eq 3) {
+    Write-Host "`nBIRLLL! MIGRATIONS CRIADAS PARA TODOS OS BANCOS!" -ForegroundColor Green
+    Write-Host "Simula+ agora eh MAIS FODA que o achei-api!" -ForegroundColor Cyan
+} elseif ($successCount -gt 0) {
+    Write-Host "`nAlgumas migrations criadas com sucesso, outras falharam." -ForegroundColor Yellow
 } else {
-    Write-Host "Erro no build. Migration cancelada." -ForegroundColor Red
+    Write-Host "`nNenhuma migration foi criada. Verifique os erros acima." -ForegroundColor Red
     exit 1
 }
 
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Migration '$MigrationName' criada com sucesso em Database/Migrations/$outputDir!" -ForegroundColor Green
-} else {
-    Write-Host "Erro ao criar migration." -ForegroundColor Red
-    exit 1
-}
+Write-Host "="*60 -ForegroundColor Cyan

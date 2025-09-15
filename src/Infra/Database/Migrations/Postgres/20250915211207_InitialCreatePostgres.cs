@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Infra.Database.Migrations.Sqlite
+namespace Infra.Database.Migrations.Postgres
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCreatePostgres : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,14 +15,15 @@ namespace Infra.Database.Migrations.Sqlite
                 name: "Exams",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: true),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    TimeSpentMaxSeconds = table.Column<int>(type: "INTEGER", nullable: false),
-                    TotalQuestionsPerAttempt = table.Column<int>(type: "INTEGER", nullable: false),
-                    ImageSlug = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    TimeSpentMaxSeconds = table.Column<int>(type: "integer", nullable: false),
+                    TotalQuestionsPerAttempt = table.Column<int>(type: "integer", nullable: false),
+                    ImageSlug = table.Column<string>(type: "text", nullable: true),
+                    MyProperty = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,15 +34,15 @@ namespace Infra.Database.Migrations.Sqlite
                 name: "ExamAttempts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    TimeSpentSeconds = table.Column<int>(type: "INTEGER", nullable: true),
-                    Score = table.Column<int>(type: "INTEGER", nullable: true),
-                    FinishedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    TimeSpentSeconds = table.Column<int>(type: "integer", nullable: true),
+                    Score = table.Column<int>(type: "integer", nullable: true),
+                    FinishedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,18 +59,18 @@ namespace Infra.Database.Migrations.Sqlite
                 name: "Questions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExamId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: true),
-                    Option1 = table.Column<string>(type: "TEXT", nullable: true),
-                    Option2 = table.Column<string>(type: "TEXT", nullable: true),
-                    Option3 = table.Column<string>(type: "TEXT", nullable: true),
-                    Option4 = table.Column<string>(type: "TEXT", nullable: true),
-                    Option5 = table.Column<string>(type: "TEXT", nullable: true),
-                    CorrectOptions = table.Column<string>(type: "TEXT", nullable: true),
-                    DifficultyLevel = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: true),
+                    Option1 = table.Column<string>(type: "text", nullable: true),
+                    Option2 = table.Column<string>(type: "text", nullable: true),
+                    Option3 = table.Column<string>(type: "text", nullable: true),
+                    Option4 = table.Column<string>(type: "text", nullable: true),
+                    Option5 = table.Column<string>(type: "text", nullable: true),
+                    CorrectOptions = table.Column<string>(type: "text", nullable: true),
+                    DifficultyLevel = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,13 +87,13 @@ namespace Infra.Database.Migrations.Sqlite
                 name: "Answers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ExamAttemptId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    QuestionId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    SelectedOptions = table.Column<string>(type: "TEXT", nullable: true),
-                    IsCorrect = table.Column<bool>(type: "INTEGER", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ExamAttemptId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuestionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SelectedOptions = table.Column<string>(type: "text", nullable: true),
+                    IsCorrect = table.Column<bool>(type: "boolean", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

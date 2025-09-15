@@ -128,8 +128,7 @@ using (var scope = app.Services.CreateScope())
 {
     var env = app.Environment;
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.Migrate();
-
+    
     if (env.IsDevelopment() || env.IsStaging())
     {
         var seeder = new DatabaseSeeder(context);

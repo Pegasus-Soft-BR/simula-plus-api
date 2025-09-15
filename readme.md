@@ -6,18 +6,29 @@ Sistema de simulados para exames e entrevistas.
 - Visual Studio Community 2022.
 
 
-## Migrations
+## Estratégia de criação do banco de dados
+
+O banco de dados é criado e atualizado automaticamente via **Migrations** na primeira execução.
+
+### Como criar migrations
 
 ```powershell
-# PostgreSQL
-.\migration.ps1 postgres NomeMigration
+# O script detecta automaticamente o DatabaseProvider do appsettings.Development.json
+.\migration.ps1 NomeDaMigration
 
-# SQL Server  
-.\migration.ps1 sqlserver NomeMigration
-
-# SQLite
-.\migration.ps1 sqlite NomeMigration
+# Exemplo:
+.\migration.ps1 AddNewColumn
 ```
+
+### Suporte multi-database
+- **SQL Server:** migrations em `Database/Migrations/SqlServer/`
+- **PostgreSQL:** migrations em `Database/Migrations/Postgres/`  
+- **SQLite:** migrations em `Database/Migrations/Sqlite/`
+
+### Como funciona
+1. **Development:** `Migrate()` aplica migrations + seed popula dados
+2. **Production:** `Migrate()` aplica migrations apenas
+3. **Zero configuração:** dev abre projeto e funciona automaticamente
 # Ambientes 
 - [PROD](https://mock-exams.pegasus-soft.com.br/swagger)
 

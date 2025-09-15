@@ -1,6 +1,7 @@
 using Domain;
 using Domain.DTOs;
 using Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,10 @@ public class DatabaseSeeder
 
     public void Seed()
     {
-        _context.Database.EnsureCreated();
-
+        // 1. PRIMEIRO: Aplica migrations (cria tabelas)
+        _context.Database.Migrate();
+        
+        // 2. DEPOIS: Verifica se já tem dados (agora tabela existe)
         if (_context.Exams.Any()) return;
 
         AddExams();

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockExams.Api.Filters;
@@ -21,12 +22,14 @@ public class OperationsController : ControllerBase
 {
     protected string _validToken;
     private readonly IWebHostEnvironment _env;
+    private readonly IConfiguration _config;
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
     protected IPegasusApiClient _pegasusApiClient;
 
-    public OperationsController(IOptions<ServerSettings> settings, IWebHostEnvironment env, ILogger<OperationsController> logger, IIAClient chatGptClient, IPegasusApiClient pegasusApiClient)
+    public OperationsController(IConfiguration config, IOptions<ServerSettings> settings, IWebHostEnvironment env, ILogger<OperationsController> logger, IIAClient chatGptClient, IPegasusApiClient pegasusApiClient)
     {
+        _config = config;
         _env = env;
         _logger = logger;
         _chatGptClient = chatGptClient;
@@ -48,6 +51,7 @@ public class OperationsController : ControllerBase
     {
         var result = new
         {
+            DatabaseProvider = _config["DatabaseProvider"],
             Service = Assembly.GetEntryAssembly().GetName().Name.ToString(),
             Version = Assembly.GetEntryAssembly().GetName().Version.ToString(),
             DotNetVersion = System.Environment.Version.ToString(),

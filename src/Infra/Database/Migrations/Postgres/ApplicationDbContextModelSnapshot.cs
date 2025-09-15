@@ -7,7 +7,7 @@ using MockExams.Infra.Database;
 
 #nullable disable
 
-namespace Infra.Database.Migrations.Sqlite
+namespace Infra.Database.Migrations.Postgres
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -68,6 +68,9 @@ namespace Infra.Database.Migrations.Sqlite
 
                     b.Property<string>("ImageSlug")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("MyProperty")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("TimeSpentMaxSeconds")
                         .HasColumnType("INTEGER");
