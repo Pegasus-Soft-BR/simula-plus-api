@@ -1,8 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-ChildItem \"C:\\REPOS\\_PEGASUS\\simula-plus-api\\src\")",
-      "Bash(dotnet sln add:*)"
+      "Bash(dotnet build:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

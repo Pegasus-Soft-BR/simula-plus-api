@@ -10,8 +10,10 @@ using FluentValidation;
 using Infra.PegasusApi;
 using Infra.PegasusApi.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MockExams.Infra.Database;
+using MockExams.Infra.Database.Providers;
 using MockExams.Infra.Database.UoW;
 using MockExams.Service.Generic;
 using Service.Exam.Generator;
@@ -26,17 +28,19 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
 {
     private readonly IExamGeneratorService _generator;
     private readonly IPegasusApiClient _pegasusApiClient;
+    private readonly IConfiguration _configuration;
     protected ILogger<ExamService> _logger;
 
 
     public ExamService(ApplicationDbContext context,
         IUnitOfWork unitOfWork,
         IValidator<Exam> validator, IMapper mapper,
-        IExamGeneratorService generator, ILogger<ExamService> logger, IPegasusApiClient pegasusApiClient) : base(context, unitOfWork, validator, mapper)
+        IExamGeneratorService generator, ILogger<ExamService> logger, IPegasusApiClient pegasusApiClient, IConfiguration configuration) : base(context, unitOfWork, validator, mapper)
     {
         _generator = generator;
         _logger = logger;
         _pegasusApiClient = pegasusApiClient;
+        _configuration = configuration;
     }
 
     public StartExamAttemptDto StartExamAttempt(Guid? userId, Guid examId)
@@ -259,22 +263,10 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
     private async Task<List<Exam>> FullTextSearch(string term)
     {
         term = term.ToLower().Trim();
-
-        var keywords = term
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(k => k.Length >= 3)
-            .Select(k => $"\"{k}*\"");
-
-        var containsClause = string.Join(" AND ", keywords);
-
-        var sql = $@"
-        SELECT TOP 10 e.*
-        FROM CONTAINSTABLE(Exams, (Title, Description), '{containsClause}') AS ft
-        JOIN Exams e ON e.Id = ft.[KEY]
-        ORDER BY ft.[RANK] DESC";
-
-        return await _ctx.Exams
-            .FromSqlRaw(sql)
-            .ToListAsync();
+        
+        var searchProvider = ExamSearchProviderFactory.Create(_configuration);
+        var results = await searchProvider.SearchAsync(_ctx, term);
+        
+        return results.ToList();
     }
 }

@@ -32,6 +32,10 @@ public static class DatabaseConfiguration
             }
         });
 
+        var ctx = services.BuildServiceProvider().GetRequiredService<ApplicationDbContext>();
+        var seeder = new DatabaseSeeder(ctx);
+        seeder.Seed();
+
         return services;
     }
 }

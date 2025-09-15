@@ -1,4 +1,4 @@
-﻿using Domain;
+using Domain;
 using Domain.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,7 +15,5 @@ public class AnswerMap
             .WithMany()
             .HasForeignKey(a => a.QuestionId)
             .OnDelete(DeleteBehavior.NoAction);
-
-        // SQLite tem limitações com foreign keys, mantemos NoAction por compatibilidade
     }
 }

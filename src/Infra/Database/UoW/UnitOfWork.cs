@@ -1,4 +1,4 @@
-﻿namespace MockExams.Infra.Database.UoW
+namespace MockExams.Infra.Database.UoW
 {
     public class UnitOfWork : IUnitOfWork
     {

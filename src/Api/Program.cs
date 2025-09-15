@@ -1,5 +1,4 @@
-﻿using Api.Configuration;
-using Domain.AutoMapper;
+﻿using Domain.AutoMapper;
 using Domain.Common;
 using Domain.DTOs;
 using Infra.HttpHandlers;
@@ -17,7 +16,6 @@ using MockExams.Api.Configuration;
 using MockExams.Api.Middleware;
 using MockExams.Infra.Database;
 using Serilog;
-using Serilog.Sinks.MSSqlServer;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,19 +26,21 @@ builder.Services.AddDatabaseConfiguration(builder.Configuration);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Serilog
-builder.Host.UseSerilog((ctx, lc) => lc
-    .ReadFrom.Configuration(ctx.Configuration)
-    .Enrich.FromLogContext()
-    .Enrich.With<SerilogTraceIdEnricher>()
-    .WriteTo.Console()
-    .WriteTo.MSSqlServer(
-        connectionString: connectionString,
-        sinkOptions: new MSSqlServerSinkOptions { TableName = "Logs", AutoCreateSqlTable = true })
-);
+builder.AddSerilogConfiguration();
 
 // HealthChecks
-builder.Services.AddHealthChecks()
-    .AddSqlServer(connectionString);
+var dbProvider = builder.Configuration["DatabaseProvider"];
+var healthChecks = builder.Services.AddHealthChecks();
+
+if (dbProvider == "Postgres")
+{
+    healthChecks.AddNpgSql(builder.Configuration.GetConnectionString("PostgresConnection"));
+}
+else if (dbProvider == "SqlServer")
+{
+    healthChecks.AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+}
+// SQLite não precisa de health check específico
 
 // Configuração de serviços e dependências
 builder.Services.AddTransient<LoggingHttpMessageHandler>();

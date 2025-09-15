@@ -1,4 +1,4 @@
-﻿using Domain;
+using Domain;
 using Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using MockExams.Infra.Database.Mapping;
@@ -8,24 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace MockExams.Infra.Database;
-
-// ----------------------------------------------------------------------------------
-// Esse contexto faz parte de uma arquitetura multi-provider onde suportamos
-// SQL Server, PostgreSQL e SQLite usando o mesmo nome de classe e namespace.
-//
-// Todos os ApplicationDbContext vivem em projetos separados:
-// - infra-sql-server
-// - infra-postgres  
-// - infra-sqlite
-//
-// A seleção de qual contexto será usado é feita via configuração no appsettings.json
-// através do DatabaseConfiguration.cs que faz o switch baseado no DatabaseProvider.
-//
-// Isso permite que a aplicação use sempre `ApplicationDbContext` em toda parte,
-// sem precisar conhecer o banco usado ou depender de interfaces extras.
-//
-// Simples, previsível e fácil de debugar.
-// ----------------------------------------------------------------------------------
 
 public class ApplicationDbContext : DbContext
 {
@@ -43,7 +25,7 @@ public class ApplicationDbContext : DbContext
 
         base.OnModelCreating(modelBuilder);
 
-        this.SetUtcOnDatabase(modelBuilder);
+        modelBuilder.SetUtcOnDatabase();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

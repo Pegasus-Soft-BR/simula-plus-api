@@ -47,7 +47,6 @@
 		<ProjectReference Include="..\Helper\Helper.csproj" />
 		<ProjectReference Include="..\Infra\Infra.csproj" />
 		<ProjectReference Include="..\Service\Service.csproj" />
-		<ProjectReference Include="..\infra-sql-server\infra-sql-server.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="Properties\PublishProfiles\" />
