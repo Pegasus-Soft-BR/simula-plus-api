@@ -7,10 +7,19 @@ Sistema de simulados para exames e entrevistas.
 
 ---
 
-## Rebaselining migrations
+## Migrations
+
+### Caminho feliz
+
+```bash
+# cria sua migration
+Add-Migration MigrationInicial -OutputDir "Database/Migrations"
+```
+
+### Rebaselining migrations
 
 - 1 - Escolha seu banco de dados no `appsettings.Development.json`.
-- 2 - Remova todas as migrations existentes (caso existam) dentro da pasta `Database/Migrations`.
+- 2 - Remova TUDO da pasta `Database/Migrations`.
 - 2 - Crie a migration inicial com o comando abaixo.
 
 ```bash
@@ -21,7 +30,9 @@ Add-Migration MigrationInicial -OutputDir "Database/Migrations"
 
 - 3 - Rebaselining migrations
 
-Coloque um return no início do método `Up` da migration criada acima e rode o comando abaixo. 
+- Coloque um return no início do método `Up` da migration criada acima e rode o comando abaixo.
+- Isso é importante para que o EF concile as migrations com o banco de dados existente. Fiquem na mesma página.
+```bash
 
 
 - 4 - Atulize o banco de dados com o comando abaixo:
