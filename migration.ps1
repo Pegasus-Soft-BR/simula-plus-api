@@ -34,26 +34,53 @@ try {
         Write-Host "`nProcessando $($provider.Display)..." -ForegroundColor Magenta
         
         try {
-            # Atualiza appsettings para o provider atual
+            # 1. Backup do snapshot atual (se existir)
+            $snapshotPath = "src/Infra/Database/Migrations/$($provider.Output)/ApplicationDbContextModelSnapshot.cs"
+            $snapshotBackupPath = "$snapshotPath.backup"
+            
+            if (Test-Path $snapshotPath) {
+                Write-Host "   Fazendo backup do snapshot..." -ForegroundColor Yellow
+                Copy-Item $snapshotPath $snapshotBackupPath
+            }
+            
+            # 2. Atualiza appsettings para o provider atual
             $appsettingsContent = Get-Content $appsettingsPath -Raw | ConvertFrom-Json
             $appsettingsContent.DatabaseProvider = $provider.Name
             $appsettingsContent | ConvertTo-Json -Depth 10 | Set-Content $appsettingsPath
             
-            # Cria migration para este provider
+            # 3. Cria migration para este provider
             $migrationCommand = "dotnet ef migrations add $($MigrationName)$($provider.Name) -p src/Infra -s src/Api --output-dir `"Database/Migrations/$($provider.Output)`""
             Invoke-Expression $migrationCommand
             
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "   OK $($provider.Display) - SUCESSO!" -ForegroundColor Green
                 $successCount++
+                
+                # Remove backup se sucesso
+                if (Test-Path $snapshotBackupPath) {
+                    Remove-Item $snapshotBackupPath
+                }
             } else {
                 $errors += "ERRO $($provider.Display) - FALHOU!"
                 Write-Host "   ERRO $($provider.Display) - FALHOU!" -ForegroundColor Red
+                
+                # Restaura snapshot se erro
+                if (Test-Path $snapshotBackupPath) {
+                    Write-Host "   Restaurando snapshot original..." -ForegroundColor Yellow
+                    Move-Item $snapshotBackupPath $snapshotPath -Force
+                }
             }
         }
         catch {
             $errors += "ERRO $($provider.Display) - ERRO: $($_.Exception.Message)"
             Write-Host "   ERRO $($provider.Display) - ERRO: $($_.Exception.Message)" -ForegroundColor Red
+            
+            # Restaura snapshot se erro
+            $snapshotBackupPath = "src/Infra/Database/Migrations/$($provider.Output)/ApplicationDbContextModelSnapshot.cs.backup"
+            if (Test-Path $snapshotBackupPath) {
+                Write-Host "   Restaurando snapshot original..." -ForegroundColor Yellow
+                Move-Item $snapshotBackupPath "src/Infra/Database/Migrations/$($provider.Output)/ApplicationDbContextModelSnapshot.cs" -Force
+            }
         }
     }
 }

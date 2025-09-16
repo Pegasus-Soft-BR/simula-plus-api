@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Infra.Database.Migrations.Postgres
+namespace Infra.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreatePostgres : Migration
+    public partial class MigrationInicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,7 +21,6 @@ namespace Infra.Database.Migrations.Postgres
                     TimeSpentMaxSeconds = table.Column<int>(type: "integer", nullable: false),
                     TotalQuestionsPerAttempt = table.Column<int>(type: "integer", nullable: false),
                     ImageSlug = table.Column<string>(type: "text", nullable: true),
-                    MyProperty = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

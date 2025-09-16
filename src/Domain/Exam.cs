@@ -14,8 +14,6 @@ public class Exam : BaseEntity
 
     public virtual IList<Question> Questions { get; set; }
 
-    public int MyProperty { get; set; }
-
     public string GetImageUrl(string baseUrl)
     {
         if (string.IsNullOrEmpty(ImageSlug))

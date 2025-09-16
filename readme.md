@@ -5,31 +5,35 @@ Sistema de simulados para exames e entrevistas.
 ## Pré-requisitos
 - Visual Studio Community 2022.
 
+---
 
-## Estratégia de criação do banco de dados
+## Rebaselining migrations
 
-O banco de dados é criado e atualizado automaticamente via **Migrations** na primeira execução.
+- 1 - Escolha seu banco de dados no `appsettings.Development.json`.
+- 2 - Remova todas as migrations existentes (caso existam) dentro da pasta `Database/Migrations`.
+- 2 - Crie a migration inicial com o comando abaixo.
 
-### Como criar migrations
+```bash
 
-```powershell
-# O script detecta automaticamente o DatabaseProvider do appsettings.Development.json
-.\migration.ps1 NomeDaMigration
-
-# Exemplo:
-.\migration.ps1 AddNewColumn
+# cria sua migration
+Add-Migration MigrationInicial -OutputDir "Database/Migrations"
 ```
 
-### Suporte multi-database
-- **SQL Server:** migrations em `Database/Migrations/SqlServer/`
-- **PostgreSQL:** migrations em `Database/Migrations/Postgres/`  
-- **SQLite:** migrations em `Database/Migrations/Sqlite/`
+- 3 - Rebaselining migrations
 
-### Como funciona
-1. **Development:** `Migrate()` aplica migrations + seed popula dados
-2. **Production:** `Migrate()` aplica migrations apenas
-3. **Zero configuração:** dev abre projeto e funciona automaticamente
-# Ambientes 
+Coloque um return no início do método `Up` da migration criada acima e rode o comando abaixo. 
+
+
+- 4 - Atulize o banco de dados com o comando abaixo:
+```bash
+# aplica a migration
+Update-Database
+```
+
+
+
+---
+## Ambientes 
 - [PROD](https://mock-exams.pegasus-soft.com.br/swagger)
 
 
@@ -53,7 +57,7 @@ dotnet clean ./src/Api/Api.csproj --verbosity quiet
 ```
 
 
-## 🗄️ Colinha docker
+## 🗄️ Bancos de daodos - Colinha docker
 
 Usar um banco local é muito mais rápido e acelera o desenvolvimento. Escolha seu banco favorito e aproveite!
 

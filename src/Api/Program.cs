@@ -123,17 +123,4 @@ app.MapHealthChecks("/health", new HealthCheckOptions
     }
 });
 
-// Seed e migrations
-using (var scope = app.Services.CreateScope())
-{
-    var env = app.Environment;
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    
-    if (env.IsDevelopment() || env.IsStaging())
-    {
-        var seeder = new DatabaseSeeder(context);
-        seeder.Seed();
-    }
-}
-
 app.Run();

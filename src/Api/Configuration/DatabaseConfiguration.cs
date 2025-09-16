@@ -9,7 +9,7 @@ public static class DatabaseConfiguration
 {
     public static IServiceCollection AddDatabaseConfiguration(this IServiceCollection services, IConfiguration config)
     {
-        var dbProvider = config["DatabaseProvider"];
+        var dbProvider = config["DatabaseProvider"].ToLower();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -17,12 +17,11 @@ public static class DatabaseConfiguration
 
             switch (dbProvider)
             {
-                case "Postgres":
+                case "postgres":
                     options.UseNpgsql(config.GetConnectionString("PostgresConnection"));
                     break;
 
-                case "Sqlite":
-                case "SQLite":
+                case "sqlite":
                     options.UseSqlite(config.GetConnectionString("SqliteConnection"));
                     break;
 
@@ -31,6 +30,14 @@ public static class DatabaseConfiguration
                     break;
             }
         });
+
+        var ctx = services.BuildServiceProvider().GetRequiredService<ApplicationDbContext>();
+
+        if (dbProvider == "sqlite") ctx.Database.EnsureCreated();
+        else ctx.Database.Migrate();
+
+        var seeder = new DatabaseSeeder(ctx);
+        seeder.Seed();
 
         return services;
     }
