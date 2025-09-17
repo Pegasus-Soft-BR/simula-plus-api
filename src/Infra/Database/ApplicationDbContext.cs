@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MockExams.Infra.Database;
+namespace Infra.Database;
 
 public class ApplicationDbContext : DbContext
 {

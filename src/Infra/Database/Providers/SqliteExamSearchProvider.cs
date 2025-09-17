@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public class SqliteExamSearchProvider : IExamSearchProvider
 {
@@ -19,7 +19,7 @@ public class SqliteExamSearchProvider : IExamSearchProvider
 
         foreach (var keyword in keywords)
         {
-            query = query.Where(e => 
+            query = query.Where(e =>
                 e.Title.ToLower().Contains(keyword.ToLower()) ||
                 e.Description.ToLower().Contains(keyword.ToLower()));
         }

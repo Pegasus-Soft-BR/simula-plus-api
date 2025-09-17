@@ -7,14 +7,14 @@ using Domain.DTOs.Exam;
 using Domain.Enums;
 using Domain.Exceptions;
 using FluentValidation;
+using Infra.Database;
+using Infra.Database.Providers;
+using Infra.Database.UoW;
 using Infra.PegasusApi;
 using Infra.PegasusApi.Dtos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MockExams.Infra.Database;
-using MockExams.Infra.Database.Providers;
-using MockExams.Infra.Database.UoW;
 using MockExams.Service.Generic;
 using Service.Exam.Generator;
 using System;
@@ -263,10 +263,10 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
     private async Task<List<Exam>> FullTextSearch(string term)
     {
         term = term.ToLower().Trim();
-        
+
         var searchProvider = ExamSearchProviderFactory.Create(_configuration);
         var results = await searchProvider.SearchAsync(_ctx, term);
-        
+
         return results.ToList();
     }
 }

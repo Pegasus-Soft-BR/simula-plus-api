@@ -2,7 +2,7 @@ using Domain;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public interface IExamSearchProvider
 {

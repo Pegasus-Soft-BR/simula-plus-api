@@ -1,4 +1,5 @@
 ﻿using Domain.DTOs;
+using Infra.Database;
 using Infra.IA;
 using Infra.PegasusApi;
 using Infra.PegasusApi.Dtos;
@@ -6,10 +7,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MockExams.Api.Filters;
+using MockExams.Helper.Extensions;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,14 +29,16 @@ public class OperationsController : ControllerBase
     protected ILogger<OperationsController> _logger;
     protected IIAClient _chatGptClient;
     protected IPegasusApiClient _pegasusApiClient;
+    protected readonly ApplicationDbContext _ctx;
 
-    public OperationsController(IConfiguration config, IOptions<ServerSettings> settings, IWebHostEnvironment env, ILogger<OperationsController> logger, IIAClient chatGptClient, IPegasusApiClient pegasusApiClient)
+    public OperationsController(IConfiguration config, IOptions<ServerSettings> settings, IWebHostEnvironment env, ILogger<OperationsController> logger, IIAClient chatGptClient, IPegasusApiClient pegasusApiClient, ApplicationDbContext ctx)
     {
         _config = config;
         _env = env;
         _logger = logger;
         _chatGptClient = chatGptClient;
         _pegasusApiClient = pegasusApiClient;
+        _ctx = ctx;
     }
 
     [HttpGet]
@@ -95,6 +100,26 @@ public class OperationsController : ControllerBase
 
         var result = await _pegasusApiClient.NotifyAdminsAsync(request);
         return Ok(result);
+    }
+
+    [HttpPost("backfill-search-text")]
+    [Authorize("Bearer")]
+    [PegasusAuthorizationFilter("Admin")]
+    public async Task<IActionResult> BackfillSearchText()
+    {
+
+        try
+        {
+            var products = await _ctx.Exams.ToListAsync();
+            foreach (var p in products)
+                p.SearchText = p.Title.ToNormalizedSearchText() + " " + p.Description.ToNormalizedSearchText();
+            await _ctx.SaveChangesAsync();
+            return Ok("Texto de busca atualizado para todos os produtos.");
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     protected bool _IsValidJobToken() => Request.Headers["Authorization"].ToString() == _validToken;

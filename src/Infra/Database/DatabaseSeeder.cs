@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MockExams.Infra.Database;
+namespace Infra.Database;
 
 public class DatabaseSeeder
 {
@@ -29,12 +29,12 @@ public class DatabaseSeeder
 
             _ctx.SaveChanges();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             // Podemos ignorar erros de seed durante a criação de migrations POSTGRES
         }
-        
-        
+
+
     }
 
     private void AddExams()

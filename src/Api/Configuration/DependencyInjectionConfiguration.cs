@@ -1,10 +1,10 @@
 ﻿using Domain;
 using Domain.Validators;
 using FluentValidation;
+using Infra.Database.UoW;
 using Infra.IA;
 using Infra.PegasusApi;
 using Microsoft.Extensions.DependencyInjection;
-using MockExams.Infra.Database.UoW;
 using MockExams.Service;
 using Service.Exam.Generator;
 

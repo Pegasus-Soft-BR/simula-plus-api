@@ -1,17 +1,18 @@
 using Microsoft.Extensions.Configuration;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public static class ExamSearchProviderFactory
 {
     public static IExamSearchProvider Create(IConfiguration configuration)
     {
         var dbProvider = configuration["DatabaseProvider"] ?? "SqlServer";
+        dbProvider = dbProvider.ToLower();
 
         return dbProvider switch
         {
-            "Postgres" => new PostgresExamSearchProvider(),
-            "Sqlite" => new SqliteExamSearchProvider(),
+            "postgres" => new PostgresExamSearchProvider(),
+            "sqlite" => new SqliteExamSearchProvider(),
             _ => new SqlServerExamSearchProvider()
         };
     }
