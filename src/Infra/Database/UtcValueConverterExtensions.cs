@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 
-namespace MockExams.Infra.Database;
+namespace Infra.Database;
 
 public static class UtcValueConverterExtensions
 {

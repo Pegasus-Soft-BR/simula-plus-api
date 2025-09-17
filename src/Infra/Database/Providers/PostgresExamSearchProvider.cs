@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public class PostgresExamSearchProvider : IExamSearchProvider
 {

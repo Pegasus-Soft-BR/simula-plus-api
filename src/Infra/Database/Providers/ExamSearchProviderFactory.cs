@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public static class ExamSearchProviderFactory
 {

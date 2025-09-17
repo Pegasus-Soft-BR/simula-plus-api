@@ -2,9 +2,9 @@
 using Domain;
 using Domain.DTOs.Exam;
 using FluentValidation;
+using Infra.Database;
+using Infra.Database.UoW;
 using Microsoft.Extensions.Logging;
-using MockExams.Infra.Database;
-using MockExams.Infra.Database.UoW;
 using MockExams.Service.Generic;
 
 namespace MockExams.Service;

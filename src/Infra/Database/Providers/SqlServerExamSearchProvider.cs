@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MockExams.Infra.Database.Providers;
+namespace Infra.Database.Providers;
 
 public class SqlServerExamSearchProvider : IExamSearchProvider
 {
