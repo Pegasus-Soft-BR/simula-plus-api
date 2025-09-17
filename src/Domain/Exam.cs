@@ -7,16 +7,25 @@ namespace Domain;
 public class Exam : BaseEntity
 {
     private string _title;
+    private string _description;
     public string Title
     {
         get => _title;
         set
         {
             _title = value;
-            SearchText = value.ToNormalizedSearchText();
+            UpdateSearchText();
         }
     }
-    public string Description { get; set; }
+    public string Description
+    {
+        get => _description;
+        set
+        {
+            _description = value;
+            UpdateSearchText();
+        }
+    }
     public int TimeSpentMaxSeconds { get; set; }
     public int TotalQuestionsPerAttempt { get; set; }
     public string ImageSlug { get; set; }
@@ -30,5 +39,11 @@ public class Exam : BaseEntity
             return null;
         else
             return $"{baseUrl}/ExamCovers/{this.ImageSlug}.jpg";
+    }
+
+    private void UpdateSearchText()
+    {
+        SearchText = Title.ToNormalizedSearchText();
+        SearchText += " " + Description.ToNormalizedSearchText();
     }
 }
