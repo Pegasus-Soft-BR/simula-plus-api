@@ -7,7 +7,9 @@
       "Bash(Get-ChildItem \"C:\\REPOS\\_PEGASUS\\simula-plus-api\\src\\Infra\\Database\\Migrations\" -Recurse)",
       "Bash(dotnet ef migrations add:*)",
       "Bash(dotnet tool restore:*)",
-      "Bash(dotnet tool install:*)"
+      "Bash(dotnet tool install:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

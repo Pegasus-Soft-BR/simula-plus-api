@@ -37,7 +37,7 @@ public static class DatabaseConfiguration
         else ctx.Database.Migrate();
 
         var seeder = new DatabaseSeeder(ctx);
-        seeder.Seed();
+        // seeder.Seed();
 
         return services;
     }
