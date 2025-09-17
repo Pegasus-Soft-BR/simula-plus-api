@@ -16,9 +16,9 @@ public class Exam : BaseEntity
 
     public string GetImageUrl(string baseUrl)
     {
-        if(string.IsNullOrEmpty(ImageSlug))
+        if (string.IsNullOrEmpty(ImageSlug))
             return null;
-        else 
+        else
             return $"{baseUrl}/ExamCovers/{this.ImageSlug}.jpg";
     }
 }

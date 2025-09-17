@@ -1,7 +1,4 @@
-﻿using Domain;
-using Domain.DTOs;
 using Domain;
-using Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,26 +8,33 @@ namespace MockExams.Infra.Database;
 public class DatabaseSeeder
 {
 
-    private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext _ctx;
 
 
     public DatabaseSeeder(ApplicationDbContext context)
     {
-        _context = context;
+        _ctx = context;
     }
 
     public void Seed()
     {
-        _context.Database.EnsureCreated();
+        try
+        {
+            if (_ctx.Exams.Any()) return;
 
-        if (_context.Exams.Any()) return;
+            AddExams();
+            AddJavaQuestions();
+            AddCSharpQuestions();
+            AddNodeJsQuestions();
 
-        AddExams();
-        AddJavaQuestions();
-        AddCSharpQuestions();
-        AddNodeJsQuestions();
-
-        _context.SaveChanges();
+            _ctx.SaveChanges();
+        }
+        catch(Exception ex)
+        {
+            // Podemos ignorar erros de seed durante a criação de migrations POSTGRES
+        }
+        
+        
     }
 
     private void AddExams()
@@ -63,13 +67,13 @@ public class DatabaseSeeder
             }
         };
 
-        _context.Exams.AddRange(exams);
-        _context.SaveChanges();
+        _ctx.Exams.AddRange(exams);
+        _ctx.SaveChanges();
     }
 
     private void AddJavaQuestions()
     {
-        var javaExam = _context.Exams.FirstOrDefault(e => e.Title == "Java Basics");
+        var javaExam = _ctx.Exams.FirstOrDefault(e => e.Title == "Java Basics");
         if (javaExam == null) return;
 
         var questions = new List<Question>
@@ -256,12 +260,12 @@ public class DatabaseSeeder
         }
     };
 
-        _context.Questions.AddRange(questions);
+        _ctx.Questions.AddRange(questions);
     }
 
     private void AddCSharpQuestions()
     {
-        var csharpExam = _context.Exams.FirstOrDefault(e => e.Title == "C# Fundamentals");
+        var csharpExam = _ctx.Exams.FirstOrDefault(e => e.Title == "C# Fundamentals");
         if (csharpExam == null) return;
 
         var questions = new List<Question>
@@ -448,13 +452,13 @@ public class DatabaseSeeder
         }
     };
 
-        _context.Questions.AddRange(questions);
+        _ctx.Questions.AddRange(questions);
     }
 
 
     private void AddNodeJsQuestions()
     {
-        var nodeExam = _context.Exams.FirstOrDefault(e => e.Title == "Node.js Essentials");
+        var nodeExam = _ctx.Exams.FirstOrDefault(e => e.Title == "Node.js Essentials");
         if (nodeExam == null) return;
 
         var questions = new List<Question>
@@ -641,8 +645,7 @@ public class DatabaseSeeder
         }
     };
 
-        _context.Questions.AddRange(questions);
+        _ctx.Questions.AddRange(questions);
     }
 
 }
-

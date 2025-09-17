@@ -1,4 +1,4 @@
-﻿using Domain;
+using Domain;
 using Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using MockExams.Infra.Database.Mapping;
@@ -19,15 +19,13 @@ public class ApplicationDbContext : DbContext
     public DbSet<ExamAttempt> ExamAttempts { get; set; }
     public DbSet<Answer> Answers { get; set; }
 
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         new AnswerMap(modelBuilder.Entity<Answer>());
 
         base.OnModelCreating(modelBuilder);
 
-        this.SetUtcOnDatabase(modelBuilder);
+        modelBuilder.SetUtcOnDatabase();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

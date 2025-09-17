@@ -5,24 +5,54 @@ Sistema de simulados para exames e entrevistas.
 ## Pré-requisitos
 - Visual Studio Community 2022.
 
+---
 
-# Database Migrations
+## Migrations
+
+### Caminho feliz
+
 ```bash
-# No Package Manager Console, execute os comandos
-Add-Migration NOME_SIGNIFICATIVO
+# cria sua migration
+Add-Migration MigrationInicial -OutputDir "Database/Migrations"
+```
 
+### Rebaselining migrations
+
+- 1 - Escolha seu banco de dados no `appsettings.Development.json`.
+- 2 - Remova TUDO da pasta `Database/Migrations`.
+- 2 - Crie a migration inicial com o comando abaixo.
+
+```bash
+
+# cria sua migration
+Add-Migration MigrationInicial -OutputDir "Database/Migrations"
+```
+
+- 3 - Rebaselining migrations
+
+- Coloque um return no início do método `Up` da migration criada acima e rode o comando abaixo.
+- Isso é importante para que o EF concile as migrations com o banco de dados existente. Fiquem na mesma página.
+```bash
+
+
+- 4 - Atulize o banco de dados com o comando abaixo:
+```bash
+# aplica a migration
 Update-Database
 ```
-# Ambientes 
+
+
+
+---
+## Ambientes 
 - [PROD](https://mock-exams.pegasus-soft.com.br/swagger)
 
 
-# colinha bash
+## 🔧 Colinha bash
 
 ```bash
-
 # restaurar dependências
-dotnet restore ./src/MockExams.sln
+dotnet restore ./src/SimulaPlus.sln
 
 # build
 dotnet build ./src/Api/Api.csproj --verbosity minimal
@@ -35,26 +65,33 @@ dotnet test ./src/Tests/Tests.csproj
 
 # clean
 dotnet clean ./src/Api/Api.csproj --verbosity quiet
-
 ```
 
 
-# Como usar o SQL SERVER com docker?
-```bash
+## 🗄️ Bancos de daodos - Colinha docker
 
-# 1 - rode o sql server via docker
-docker run --name my-sql-server -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=LpVgt4fLMZbg7kcp" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest 
+Usar um banco local é muito mais rápido e acelera o desenvolvimento. Escolha seu banco favorito e aproveite!
 
-# 2 - Atualize a string de conexão no appsettings.development
-# "Server=localhost;Database=DEVinSales;User=sa;Password=LpVgt4fLMZbg7kcp"
+```powershell
+# sql server
+docker run --name my-sql-server -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=LpVgt4fLMZbg7kcp" -p 1433:1433 -d mcr.microsoft.com/mssql/server:2022-latest
 
+# postgres
+docker run --name my-postgres -p 5432:5432 -e POSTGRES_PASSWORD=goku123 -e PGDATA=/var/lib/postgresql-static/data -d postgres
 ```
 
-# Build e Run com Docker!
+## 🐳 Docker da Aplicação
+
 ```bash
 # Build da imagem
-docker build -t simula-plus-api -f devops/Dockerfile .
+docker build -f devops/Dockerfile -t simula-plus-api .
 
 # Run com environment Development
-docker run -d -p 8000:8080 -e ASPNETCORE_ENVIRONMENT=Development --name simula-plus-container simula-plus-api
+docker run -d --name simula-plus-api-dev -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Development simula-plus-api
+
+# Ver logs
+docker logs -f simula-plus-api-dev
+
+# Parar e remover
+docker stop simula-plus-api-dev && docker rm simula-plus-api-dev
 ```

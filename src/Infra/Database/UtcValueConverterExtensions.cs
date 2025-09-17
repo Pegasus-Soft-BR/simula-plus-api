@@ -1,13 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System;
 
 namespace MockExams.Infra.Database;
 
-public static class UtcContext
+public static class UtcValueConverterExtensions
 {
-
-    public static void SetUtcOnDatabase(this ApplicationDbContext context, ModelBuilder builder)
+    public static void SetUtcOnDatabase(this ModelBuilder builder)
     {
         var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
             v => v.ToUniversalTime(),
@@ -20,22 +19,16 @@ public static class UtcContext
         foreach (var entityType in builder.Model.GetEntityTypes())
         {
             if (entityType.IsKeyless)
-            {
                 continue;
-            }
 
             foreach (var property in entityType.GetProperties())
             {
                 if (property.ClrType == typeof(DateTime))
-                {
                     property.SetValueConverter(dateTimeConverter);
-                }
+
                 else if (property.ClrType == typeof(DateTime?))
-                {
                     property.SetValueConverter(nullableDateTimeConverter);
-                }
             }
         }
     }
 }
-
