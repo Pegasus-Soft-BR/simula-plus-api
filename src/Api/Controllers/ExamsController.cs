@@ -95,6 +95,15 @@ public class ExamsController : ControllerBase
         return Ok(results);
     }
 
+    [HttpPost("add-from-json")]
+    [Authorize("Bearer")]
+    [AppAuthorizationFilter("admin")]
+    public async Task<IActionResult> AddFromJson([FromBody] CreateExamDto newExamDto)
+    {
+        await _service.AddFromJson(newExamDto);
+        return Ok("Exame criado com sucesso.");
+    }
+
     [HttpGet("get-enums")]
     public IActionResult GetEnums()
     {

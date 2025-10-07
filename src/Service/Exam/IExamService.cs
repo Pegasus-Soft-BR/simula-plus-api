@@ -19,4 +19,5 @@ public interface IExamService : IBaseService<Exam, ExamDto>
     Task<PagedList<MyExamAttemptDto>> MyExamAttemptsAsync(Guid? userId, int itemsPerPage, int page);
     MyExamAttemptDetailsDto MyExamAttemptDetails(Guid? userId, Guid attemptId);
     Task<List<ExamDto>> Search(string term = "", UserDto? currentUser = null);
+    Task AddFromJson(CreateExamDto newExamDto);
 }

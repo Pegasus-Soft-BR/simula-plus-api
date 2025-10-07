@@ -7,6 +7,7 @@ using Domain.DTOs.Exam;
 using Domain.Enums;
 using Domain.Exceptions;
 using FluentValidation;
+using Helper;
 using Infra.Database;
 using Infra.Database.Providers;
 using Infra.Database.UoW;
@@ -222,6 +223,14 @@ public class ExamService : BaseService<Exam, ExamDto>, IExamService
 
         var examsDto = _mapper.Map<List<ExamDto>>(exams);
         return examsDto;
+    }
+
+    public async Task AddFromJson(CreateExamDto newExamDto)
+    {
+
+        var newExam = _mapper.Map<Domain.Exam>(newExamDto);
+        _ctx.Exams.Add(newExam);
+        await _ctx.SaveChangesAsync();
     }
 
     private async Task NotifyAdminsOfGeneratedExamAsync(string term, UserDto currentUser, Exam newExam)
